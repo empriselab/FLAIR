@@ -1,0 +1,262 @@
+----------------------------------------
+Image: 17_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 43_color.png
+GPT4-Vision: No. The pieces of banana on the plate are larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 49_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 50_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 52_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 74_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 79_color.png
+GPT4-Vision: Yes. There are pieces of banana on the plate that are bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 85_color.png
+GPT4-Vision: No. There is one piece of banana on the plate, which is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 101_color.png
+GPT4-Vision: No. There is a piece of banana on the plate, but it is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 107_color.png
+GPT4-Vision: No. There is only one piece of banana on the plate, and it is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 111_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 113_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 122_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 136_color.png
+GPT4-Vision: No. There is one piece of banana on the plate, and it is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 138_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 158_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate in both images 11 and 12. It is bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 161_color.png
+GPT4-Vision: Yes. There are two pieces of banana on the plate. One of them is a bite-sized piece.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 170_color.png
+GPT4-Vision: No. There is no bite-sized piece of banana on the plate. The entire banana pieces present in each image are larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 183_color.png
+GPT4-Vision: No. There are pieces of banana on the plate; however, they appear to be larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 186_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 194_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 197_color.png
+GPT4-Vision: No. There is one piece of banana on the plate, but it is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 199_color.png
+GPT4-Vision: No. There is one piece of banana on the plate, and it is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 202_color.png
+GPT4-Vision: No. There is one piece of banana on the plate, and it is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 208_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 209_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 211_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: cut
+
+----------------------------------------
+Image: 2_color.png
+GPT4-Vision: Yes. There is one bite-sized piece of banana on the plate.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 3_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate that is bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 19_color.png
+GPT4-Vision: No. There are no bite-sized pieces of banana on the plate. The only piece of banana present is rather large.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 48_color.png
+GPT4-Vision: No. There is one piece of banana on the plate, but it is much larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 53_color.png
+GPT4-Vision: No. There are no pieces of banana on the plate that are bite-sized. The pieces on the plate are larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 61_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 86_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 92_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 96_color.png
+GPT4-Vision: No. The piece of banana on the plate is larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 105_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 106_color.png
+GPT4-Vision: Yes. There are two pieces of banana on the plate. Both of them are bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 109_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 116_color.png
+GPT4-Vision: Yes. There are two pieces of banana on the plate. One of them is a bite-sized piece.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 123_color.png
+GPT4-Vision: Yes. There is one bite-sized piece of banana on the plate.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 137_color.png
+GPT4-Vision: Yes. There are two pieces of banana on the plate. One of them is a bite-sized piece.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 140_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 159_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 164_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 169_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 182_color.png
+GPT4-Vision: No. There is one piece of banana on the plate, and it is larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 184_color.png
+GPT4-Vision: Test Image: 
+
+Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 187_color.png
+GPT4-Vision: No. There are pieces of banana on the plate, but none of them are bite-sized; they are larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 189_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 204_color.png
+GPT4-Vision: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Annotated Ground Truth: acquire
+
+----------------------------------------
+Image: 214_color.png
+GPT4-Vision: Yes. There is one piece of banana on the plate. It is bite-sized.
+Annotated Ground Truth: acquire
+

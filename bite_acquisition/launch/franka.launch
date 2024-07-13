@@ -1,0 +1,43 @@
+<launch>
+  <!-- Load the robot description parameter -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/panda_arm_hand.urdf'" />
+
+  <!-- Start the joint state publisher GUI -->
+  <!-- <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" /> -->
+
+  <!-- Robot State Publisher -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="tf_prefix" type="string" value="" />
+  </node>
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <param name="use_gui" value="false"/>
+        <rosparam param="source_list">["robot_joint_states", "wrist_joint_states"]</rosparam>
+        <param name="rate" value="100"/>
+  </node>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster_realsense"
+      args="0.027 -0.017 0.069 0.7071068 0 0.7071068 0 panda_hand camera_link" />
+
+  <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="fork_link_broadcaster"
+      args="0.013 0.0 0.235 0 0 0 1 panda_hand_tcp fork_tip" /> -->
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="chopstick_link_broadcaster"
+      args="0.0 0.0 0.15 0 0 0 1 panda_hand_tcp chopstick" /> 
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tool_frame_broadcaster"
+      args="0.0 0.0 0.0 0 0 0 1 panda_link8 tool_frame" /> 
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster"
+      args="0.0 0.0 0.0 0 0 0 1 base_link panda_link0" /> 
+
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch">
+    <arg name="color_width" value="640"/>
+    <arg name="color_height" value="480"/>
+    <!-- <arg name="color_width" value="1280"/>
+    <arg name="color_height" value="720"/> -->
+    <arg name="color_fps" value="15"/>
+  </include>
+
+</launch>

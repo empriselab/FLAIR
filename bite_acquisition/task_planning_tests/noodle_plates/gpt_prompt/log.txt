@@ -1,0 +1,205 @@
+----------------------------------------
+Image: 2.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the plate, particularly towards the center-left. The noodles are densely clumped together in that area.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 3.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the plate, densely clumped together in the center.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 4.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the plate, densely clumped together in the middle part.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 15.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 18.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the right side of the plate, densely clumped together.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 20.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles towards the middle of the plate, densely clumped together.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 21.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the left side of the plate, densely clumped together.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 26.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the left half of the plate, densely clumped together.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 37.jpg
+GPT4-Vision: No. The noodles on the plate are not densely clumped together, but rather spread out, with no single substantial pile visible.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 39.jpg
+GPT4-Vision: No. The noodles on the plate are not densely clumped together; they are mostly spread out.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 44.jpg
+GPT4-Vision: No. All the noodles on the plate are spread out, and there is no single substantial pile.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 47.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 49.jpg
+GPT4-Vision: Yes. The noodles are densely piled together in the center of the plate, forming a substantial pile.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 52.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the plate, densely clumped together. The noodles are not spread out but instead form a significant pile on the plate.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 57.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the plate, densely clumped together towards the center.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 60.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 61.jpg
+GPT4-Vision: No. The noodles in the test image are spread out, not forming a single substantial, dense pile.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 62.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible. In addition, although the noodles are more clumped together in the bottom center area of the plate, it still does not form a substantial pile.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 64.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles densely clumped together on the right side of the plate.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 72.jpg
+GPT4-Vision: No. The noodles in the test image are spread out with no single substantial pile visible.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 78.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 79.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with no single substantial pile visible.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 91.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, rather than forming a single substantial pile.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 93.jpg
+GPT4-Vision: Yes. There is a substantial pile of noodles on the plate, densely clumped together in the upper left quadrant.
+Annotated Ground Truth: twirl
+
+----------------------------------------
+Image: 22.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 24.jpg
+GPT4-Vision: No. The noodles on the plate are spread out with no single pile densely clumped together.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 33.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 38.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 51.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with no single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 53.jpg
+GPT4-Vision: Yes. There is an uncovered substantial pile of noodles on the plate, densely clumped together towards the center-left side.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 55.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 58.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 75.jpg
+GPT4-Vision: No. There is not a single dense pile of noodles visible on the plate, all of them are spread out sparsely.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 84.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 86.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, and there is not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 87.jpg
+GPT4-Vision: No. The noodles on the plate are spread out and not densely clumped together in a substantial pile.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 88.jpg
+GPT4-Vision: No. The noodles on the plate are sparsely scattered, with no single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 92.jpg
+GPT4-Vision: No. The noodles are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 94.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 97.jpg
+GPT4-Vision: No. The noodles on the plate are sparsely scattered, not a single dense pile is present.
+Annotated Ground Truth: group
+
+----------------------------------------
+Image: 99.jpg
+GPT4-Vision: No. The noodles on the plate are spread out, and there is not a single substantial pile present.
+Annotated Ground Truth: group
+

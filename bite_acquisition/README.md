@@ -1,0 +1,17 @@
+Directory Structure
+- include
+    - bite_acquisition
+- src
+    - bite_acquisition
+- scripts
+    - spaghetti
+    - grounded_sam
+- msg
+    - CartesianState.msg
+- srv
+    - JointCommand.srv
+    - PoseCommand.srv
+    - TareFTSensors.srv
+    - TwistCommand.srv
+- checkpoints
+- launch

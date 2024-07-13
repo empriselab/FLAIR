@@ -1,0 +1,7 @@
+# Turns off Dynamixel torque and changes the mode
+# Possible modes:
+# 0: Joint angle control (both joints)
+# 1: Joint angle control for joint 0 and velocity control for joint 1
+int64 mode
+---
+bool success

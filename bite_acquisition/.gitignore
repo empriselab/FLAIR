@@ -1,0 +1,17 @@
+/checkpoints/*
+/dependencies/*
+/spaghetti_checkpoints/*
+scripts/mashed_potatoes/*
+scripts/outputs/*
+scripts/log/*
+scripts/old_log/*
+scripts/skill_library.py
+src/controller.cpp
+launch/controller_utensil.launch
+task_planning_tests/noodle_plates/log/*
+task_planning_tests/noodle_plates/outputs/*
+task_planning_tests/study_plates/log/*
+task_planning_tests/study_plates/outputs/*
+*/__pycache__/*
+*.bag
+*.zip

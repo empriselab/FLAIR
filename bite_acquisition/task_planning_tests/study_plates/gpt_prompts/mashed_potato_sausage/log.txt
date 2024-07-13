@@ -1,0 +1,410 @@
+----------------------------------------
+Image: 230_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 232_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four pieces of sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 234_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 235_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 241_color.png
+GPT4-Vision: No. Most of the mashed potatoes on the plate is covered by three pieces of sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 242_color.png
+GPT4-Vision: No. Most of the mashed potatoes on the plate are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 245_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 248_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 249_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 253_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 263_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 265_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 267_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 271_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 274_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 275_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 276_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 277_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 278_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausage pieces. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 295_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausage pieces. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 302_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 303_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 315_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 323_color.png
+GPT4-Vision: No. The majority of the mashed potatoes is covered by three pieces of sausage, leaving only a small uncovered region, which is not substantial.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 325_color.png
+GPT4-Vision: No. Most of the mashed potatoes in this image are covered by at least three pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 326_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausage pieces. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 329_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausages. There is not a single uncovered substantial region of mashed potatoes.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 331_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 332_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 334_color.png
+GPT4-Vision: Yes. A substantial uncovered amount of mashed potatoes is on the plate. Some portion of the mashed potatoes is covered by three sausage pieces, but there is still a significant uncovered portion.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 335_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 337_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 338_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 340_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 341_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. Not a single uncovered substantial region of mashed potatoes is visible.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 343_color.png
+GPT4-Vision: Yes. Although two sausages are covering some of the mashed potatoes, there is still a significant amount of mashed potatoes left uncovered.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 346_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausage pieces. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 348_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 359_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. Therefore, no uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 365_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 366_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 371_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 376_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 377_color.png
+GPT4-Vision: No. Most of the mashed potatoes in this image is covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 382_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 383_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 384_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 386_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the test image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 387_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 389_color.png
+GPT4-Vision: No. Most of the mashed potatoes on the plate are covered by four sausage pieces, with no uncovered substantial region of mashed potatoes visible.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 390_color.png
+GPT4-Vision: No. Most of the mashed potatoes on the plate is covered by three sausages, and no uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 393_color.png
+GPT4-Vision: No. Most of the mashed potatoes on the plate is covered by three sausage pieces. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 395_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausage pieces. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 400_color.png
+GPT4-Vision: Yes. While some portion of mashed potatoes is covered by three sausage pieces, there is a significant amount of mashed potatoes that remains uncovered.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 401_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 404_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by four pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 406_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 407_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 408_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by pieces of sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 413_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by the sausages. There is no substantial uncovered region of mashed potatoes on the plate.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 422_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausage pieces. Not a single uncovered substantial region of mashed potatoes is visible.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 425_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by either three or four pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 434_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 435_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 438_color.png
+GPT4-Vision: No. Most of the mashed potatoes are covered by three sausages. The uncovered portion of mashed potatoes is not substantial.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 439_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three pieces of sausage, leaving no uncovered substantial region of mashed potatoes.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 440_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 262_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 280_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 281_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 284_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by four sausage pieces. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 296_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the images are covered by sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 299_color.png
+GPT4-Vision: No. Most of the mashed potatoes are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 316_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 317_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 319_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 352_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four pieces of sausage. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 354_color.png
+GPT4-Vision: No. Most of the mashed potatoes on the plate are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 358_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 385_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image is covered by four sausage pieces. Not a single uncovered substantial region of mashed potatoes is visible.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 420_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by four sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 426_color.png
+GPT4-Vision: No. Most of the mashed potatoes in the image are covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Annotated Ground Truth: push
+

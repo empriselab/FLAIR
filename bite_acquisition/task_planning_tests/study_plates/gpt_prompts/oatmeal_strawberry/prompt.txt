@@ -1,0 +1,16 @@
+Given an image, you are asked to answer the question: Is there an uncovered substantial region of oatmeal on the plate?
+
+The first ten images are in-context examples with the ground truth answer. Here are explanations for the answers:
+
+Example Image 1: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Example Image 2: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Example Image 3: Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of oatmeal is covered by three strawberries, but there is a significant amount of oatmeal uncovered.
+Example Image 4: Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of oatmeal is covered by four strawberries, but there is a significant amount of oatmeal uncovered.
+Example Image 5: No. Most of the oatmeal in the image is covered by three strawberries. No uncovered substantial region of oatmeal exists.
+Example Image 6: Yes. There are no strawberries on the plate, so all the oatmeal is uncovered. If there are no strawberries visible, then the answer is always "Yes", even if there is a very small amount of oatmeal on the plate.
+Example Image 7: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Example Image 8: No. Most of the oatmeal in the image is covered by three strawberries. No uncovered substantial region of oatmeal exists.
+Example Image 9: Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of the oatmeal is covered by one strawberry, but there is a significant amount of oatmeal uncovered.
+Example Image 10: Yes. There are no strawberries on the plate, so all the oatmeal is uncovered. If there are no strawberries visible, then the answer is always "Yes", even if there is a very small amount of oatmeal on the plate.
+
+The eleventh image is the test image. For this image, answer the question, using the in-context examples as a guide for your answer. Answer "Yes" or "No", followed by a period, and then your justification. 

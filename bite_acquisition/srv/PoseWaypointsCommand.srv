@@ -1,0 +1,5 @@
+geometry_msgs/Pose[] target_waypoints
+float64 force_threshold
+---
+bool success
+string error_msg

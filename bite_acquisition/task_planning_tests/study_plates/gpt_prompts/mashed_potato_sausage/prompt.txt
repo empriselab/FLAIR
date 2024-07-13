@@ -1,0 +1,16 @@
+Given an image, you are asked to answer the question: Is there an uncovered substantial region of mashed potatoes on the plate?
+
+The first ten images are in-context examples with the ground truth answer. Here are explanations for the answers:
+
+Example Image 1: No. Most of the mashed potatoes in the image is covered by three sausages. No uncovered substantial region of mashed potatoes exists.
+Example Image 2: No. Most of the mashed potatoes in the image is covered by two sausages. No uncovered substantial region of mashed potatoes exists.
+Example Image 3: No. Most of the mashed potatoes in the image is covered by two sausages. One other sausage lies isolated near the edge of the plate. No uncovered substantial region of mashed potatoes exists.
+Example Image 4: No. Most of the mashed potatoes in the image is covered by four sausages. One other sausage lies isolated near the edge of the plate. No uncovered substantial region of mashed potatoes exists.
+Example Image 5: Yes. There are no sausages on the plate, so all the mashed potatoes is uncovered. If there are no sausages visible, then the answer is always "Yes", even if there is a very small amount of mashed potatoes on the plate.
+Example Image 6: Yes. A substantial uncovered amount of mashed potatoes is on the plate. Some portion of mashed potato is covered by one sausage, while another sausage lies isolated near the edge of the plate, but there is a significant amount of mashed potatoes uncovered.
+Example Image 7: Yes. There are no sausages on the plate, so all the mashed potatoes is uncovered. If there are no sausages visible, then the answer is always "Yes", even if there is a very small amount of mashed potatoes on the plate.
+Example Image 8: Yes. A substantial uncovered amount of mashed potatoes is on the plate. Some portion of mashed potatoes is covered by three sausage, but there is a significant amount of mashed potatoes uncovered.
+Example Image 9: No. Most of the mashed potatoes in the image is covered by four sausages. Not a single uncovered substantial region of mashed potatoes is visible. 
+Example Image 10: Yes. A substantial uncovered amount of mashed potatoes is on the plate. Some portion is covered by two sausages, but there is a significant amount uncovered.
+
+The eleventh image is the test image. For this image, answer the question, using the in-context examples as a guide for your answer. Answer "Yes" or "No", followed by a period, and then your justification. 

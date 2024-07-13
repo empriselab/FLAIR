@@ -1,0 +1,250 @@
+----------------------------------------
+Image: 461_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 464_color.png
+GPT4-Vision: No. Most of the oatmeal on the plate is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 465_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 467_color.png
+GPT4-Vision: No. Most of the oatmeal in the eleventh image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 468_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 469_color.png
+GPT4-Vision: No. In the test image, there are five strawberries covering the oatmeal, leaving no uncovered substantial region of oatmeal.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 473_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 486_color.png
+GPT4-Vision: No. In the image, most of the oatmeal is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 487_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 495_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 500_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 502_color.png
+GPT4-Vision: No. The oatmeal on the plate is mostly covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 503_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 504_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 505_color.png
+GPT4-Vision: Image 1: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Image 2: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Image 3: Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of oatmeal is covered by three strawberries, but there is a significant amount of oatmeal uncovered.
+Image 4: Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of oatmeal is covered by four strawberries, but there is a significant amount of oatmeal uncovered.
+Image 5: No. Most of the oatmeal in the image is covered by three strawberries. No uncovered substantial region of oatmeal exists.
+Image 6: Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of the oatmeal is covered by four strawberries, but there is a significant amount of oatmeal uncovered.
+Image 7: Yes. A substantial uncovered amount of oatmeal is on the plate. Most of the strawberries are not covering the oatmeal entirely.
+Image 8: Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of the oatmeal is covered by three strawberries, but there is a significant amount of oatmeal uncovered.
+Image 9: Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of the oatmeal is covered by four strawberries, but there is a significant amount of oatmeal uncovered.
+Image 10
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 506_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 508_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 510_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 511_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 512_color.png
+GPT4-Vision: Yes. The majority of the oatmeal on the plate is uncovered, with only a small portion being covered by one or two strawberries in some of the images. The uncovered areas are substantial.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 513_color.png
+GPT4-Vision: Here are the answers and justifications for the tenth and eleventh images:
+
+Image 10:
+Yes. There are no strawberries on the plate, so all the oatmeal is uncovered.
+
+Image 11:
+Yes. A substantial uncovered amount of oatmeal is on the plate. Some portion of the oatmeal is covered by three strawberries, but there is a significant amount of oatmeal uncovered.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 514_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 713_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 723_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by at least three strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 725_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 730_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 739_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 744_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 749_color.png
+GPT4-Vision: Yes. There are no strawberries on the plate, so all the oatmeal is uncovered. If there are no strawberries visible, then the answer is always "Yes", even if there is a very small amount of oatmeal on the plate.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 754_color.png
+GPT4-Vision: Yes. A significant amount of uncovered oatmeal is present on the plate. While there are strawberries present, they do not cover most of the oatmeal.
+Annotated Ground Truth: scoop
+
+----------------------------------------
+Image: 442_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 443_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 444_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 448_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 451_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 458_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 477_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 693_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 695_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 697_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 708_color.png
+GPT4-Vision: Yes. A substantial uncovered amount of oatmeal is on the plate. While portions of the oatmeal are covered by three strawberries, there is still significant uncovered area of oatmeal, similar to Example Image 3.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 716_color.png
+GPT4-Vision: No. Most of the oatmeal in the eleventh image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 735_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 737_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 758_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 759_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by four strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+
+----------------------------------------
+Image: 760_color.png
+GPT4-Vision: No. Most of the oatmeal in the image is covered by five strawberries. No uncovered substantial region of oatmeal exists.
+Annotated Ground Truth: push
+

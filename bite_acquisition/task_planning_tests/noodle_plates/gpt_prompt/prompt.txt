@@ -1,0 +1,16 @@
+Given an image, you are asked to answer the question: Is there an uncovered substantial pile of noodles on the plate?
+
+The first ten images are in-context examples with the ground truth answer. Here are explanations for the answers:
+
+Example Image 1: Yes. There is a substantial pile of noodles on the plate, densely clumped together.
+Example Image 2: Yes. There is a substantial pile of noodles on lower half of the plate, densely clumped together.
+Example Image 3: No. The noodles on the plate are spread out, with not a single substantial pile visible.
+Example Image 4: No. The noodles are spread horizontally on the plate, with no substantial pile visible.
+Example Image 5: No. All the noodles on the plate are spread out, not a single substantial pile is present.
+Example Image 6: No. There is not a single dense pile of noodles visible on the plate, all of them are spread out sparsely. 
+Example Image 7: Yes. The noodles are densely piled together on the right half of the plate. A single substantial pile exists.
+Example Image 8: Yes. A substantial amount of noodles exists on the plate, densely packed together.
+Example Image 9: No. The noodles on the plate are sparsely scattered, not a single dense pile is present. 
+Example Image 10: Yes. A substantial pile of noodles is visible on the plate.
+
+The eleventh image is the test image. For this image, answer the question, using the in-context examples as a guide for your answer. Answer "Yes" or "No", followed by a period, and then your justification. 

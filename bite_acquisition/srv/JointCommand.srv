@@ -1,0 +1,6 @@
+string mode
+float64[] command
+float64 timeout
+---
+bool success
+string error_msg

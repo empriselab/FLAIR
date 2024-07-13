@@ -1,0 +1,16 @@
+Given an image, you are asked to answer the question: Is there a bite-sized piece of banana on the plate?
+
+The first ten images are in-context examples with the ground truth answer. Here are explanations for the answers:
+
+Example Image 1: Yes. There are two pieces of banana on the plate. Both of them are bite-sized. 
+Example Image 2: Yes. There is one piece of banana on the plate. It is bite-sized. 
+Example Image 3: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Example Image 4: No. There is one piece of banana on the plate. It is much larger than bite-sized.
+Example Image 5: Yes. There are two pieces of banana on the plate. One of them is a bite-sized piece.
+Example Image 6: Yes. There are two pieces of banana on the plate. One of them is a bite-sized piece.
+Example Image 7: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Example Image 8: No. There is one piece of banana on the plate. It is much larger than bite-sized.
+Example Image 9: No. There is one piece of banana on the plate. It is larger than bite-sized.
+Example Image 10: Yes. There are two pieces of banana on the plate. One of them is a bite-sized piece.
+
+The eleventh image is the test image. For this image, answer the question, using the in-context examples as a guide for your answer. Answer "Yes" or "No", followed by a period, and then your justification. 

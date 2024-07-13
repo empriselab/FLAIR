@@ -1,0 +1,8 @@
+string[] class_names
+---
+bool success
+string error_msg
+sensor_msgs/Image rgb_image
+sensor_msgs/Image segmentation
+geometry_msgs/Point[] segmented_points_a
+geometry_msgs/Point[] segmented_points_b

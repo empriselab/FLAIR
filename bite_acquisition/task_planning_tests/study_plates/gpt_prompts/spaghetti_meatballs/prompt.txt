@@ -1,0 +1,24 @@
+Given an image of spaghetti and meatballs on a plate, you have to determine the most suitable next action for eating spaghetti using a fork based on the arrangement of spaghetti and the position of meatballs. 
+
+There are three available actions: TWIRL spaghetti, GROUP spaghetti, and PUSH meatballs.
+
+Decision Criteria:
+
+TWIRL: Choose TWIRL when there is a dense pile of uncovered spaghetti visibile, indicating an immediate opportunity for picking up a substantial bite.
+GROUP: Opt for GROUP when TWIRL is not feasible due to sparse spaghetti on the plate. Use GROUP to consolidate spaghetti into a pile for TWIRL in the next time step.
+PUSH: Select PUSH only when TWIRL is not feasible due to meatballs covering all the spaghetti on the plate. Choose PUSH to uncover a significant pile of spaghetti hidden by a meatball so that TWIRL is possible in the next time step.
+
+The first ten images are in-context examples with the ground truth answer. Here are explanations for the answers:
+
+Example Image 1: TWIRL. TWIRL is possible as there is a dense pile of spaghetti on the plate, enabling immediate consumption. 
+Example Image 2: GROUP. TWIRL is not possible as the spaghetti on the plate are sparsely scattered. There is not a single dense pile available for TWIRL. GROUPing the spaghetti on the plate will be optimal. 
+Example Image 3: PUSH. Most of the spaghetti is covered by three meatballs. No substantial pile of spaghetti is visibile for TWIRL. PUSHing a meatball to uncover spaghetti will be optimal. 
+Example Image 4: TWIRL. TWIRL is possible as there is a substantial pile of spaghetti densely clumped together. There is a meatball on the plate, but it is on the side and not covering any spaghetti.
+Example Image 5: PUSH. Most of the spaghetti is covered by three meatballs. No substantial pile of spaghetti is visibile for TWIRL. PUSHing a meatball to uncover spaghetti will be optimal.
+Example Image 6: TWIRL. TWIRL is possible as there is a substantial pile of spaghetti available for immediate pickup. There are three meatballs on the plate, but they are on the side and do not cover the spaghetti. 
+Example Image 7: PUSH. Most of the spaghetti is covered by three meatballs. No substantial pile of spaghetti is visibile for TWIRL. PUSHing a meatball to uncover spaghetti will be optimal.
+Example Image 8: GROUP. TWIRL is not possible as the spaghetti on the plate are sparsely scattered. There is not a single dense pile available for TWIRL. Also, while there are some meatballs on the plate, none of them are sitting on a pile of spaghetti so PUSH will not be useful. Thus, GROUPing the spaghetti on the plate will be optimal.  
+Example Image 9: TWIRL. TWIRL is possible as there is a substantial uncovered pile of spaghetti available for pickup. Some portion of spaghetti is covered by meatballs, but there is a significant amount of spaghetti uncovered and densely clumped together.
+Example Image 10: GROUP. TWIRL is not possible as the spaghetti on the plate are sparsely scattered. There is not a single dense pile available for TWIRL. Also, while there are some meatballs on the plate, none of them are sitting on a pile of spaghetti so PUSH will not be useful. Thus, GROUPing the spaghetti on the plate will be optimal.
+
+The eleventh image is the test image. For this image, answer the question, using the in-context examples as a guide for your answer. Start your answer with the chosen action ("TWIRL"/"GROUP"/"PUSH") followed by a period, and then your justification.

@@ -1,0 +1,24 @@
+Given an image of fettuccine, chicken and broccoli on a plate, you have to determine the most suitable next action for eating fettuccine using a fork based on the arrangement of fettuccine and the position of chicken and broccoli. 
+
+There are three available actions: TWIRL fettuccine, GROUP fettuccine, and PUSH fettuccine.
+
+Decision Criteria:
+
+TWIRL: Choose TWIRL when there is a dense pile of uncovered fettuccine visibile, indicating an immediate opportunity for picking up a substantial bite.
+GROUP: Opt for GROUP when TWIRL is not feasible due to sparse fettuccine on the plate. Use GROUP to consolidate fettuccine into a pile for TWIRL in the next time step.
+PUSH: Select PUSH only when TWIRL is not feasible due to chicken and/or broccoli covering all the fettuccine on the plate. Choose PUSH to uncover a significant pile of fettuccine hidden by a chicken and/or broccoli so that TWIRL is possible in the next time step.
+
+The first ten images are in-context examples with the ground truth answer. Here are explanations for the answers:
+
+Example Image 1: PUSH. Most of the fettuccine is covered by broccoli and chicken. No substantial pile of fettuccine is visibile for TWIRL. PUSHing either broccoli or chicken to uncover fettuccine will be optimal. 
+Example Image 2: TWIRL. TWIRL is possible as there is a substantial pile of fettuccine densely clumped together. There are two pieces of chicken on the plate, but they are on the side and not covering any fettuccine.
+Example Image 3: PUSH. Most of the fettuccine is covered by broccoli and chicken. No substantial pile of fettuccine is visibile for TWIRL. PUSHing either broccoli or chicken to uncover fettuccine will be optimal. 
+Example Image 4: GROUP. TWIRL is not possible as the fettuccine on the plate is sparsely scattered. There is not a single dense pile available for TWIRL. Also, while there is broccoli and chicken on the plate, none of them are sitting on a pile of fettuccine so PUSH will not be useful. Thus, GROUPing the fettuccine on the plate will be optimal.  
+Example Image 5: TWIRL. TWIRL is possible as there is a substantial uncovered pile of fettuccine available for pickup. Some portion of fettuccine is covered by chicken and broccoli, but there is a significant amount of fettuccine uncovered and densely clumped together.
+Example Image 6: TWIRL. There is a single strand of fettuccine on the plate, so GROUP will not be useful. Also, there are no broccoli or chicken on the plate. Only TWIRL is feasible in the state.
+Example Image 7: GROUP. TWIRL is not possible as the fettuccine on the plate is sparsely scattered. There is not a single dense pile available for TWIRL. GROUPing the fettuccine on the plate will be optimal. 
+Example Image 8: GROUP. TWIRL is not possible as the fettuccine on the plate is sparsely scattered. There is not a single dense pile available for TWIRL. GROUPing the fettuccine on the plate will be optimal. 
+Example Image 9: PUSH. Most of the fettuccine is covered by broccoli and chicken. No substantial pile of fettuccine is visibile for TWIRL. PUSHing either broccoli or chicken to uncover fettuccine will be optimal.
+Example Image 10: TWIRL. TWIRL is possible as there is a dense pile of fettuccine on the plate, enabling immediate consumption. 
+
+The eleventh image is the test image. For this image, answer the question, using the in-context examples as a guide for your answer. Start your answer with the chosen action ("TWIRL"/"GROUP"/"PUSH") followed by a period, and then your justification.
