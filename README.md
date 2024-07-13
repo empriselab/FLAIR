@@ -1,5 +1,7 @@
 # FLAIR: Feeding via Long-horizon AcquIsition of Realistic dishes
 
+![FLAIR deployed on Kinova 6DoF, 7DoF and Franka Emika Panda 7DoF](assets/6.gif)
+
 ## Hardware Requirements
 
 The following robot plaforms are supported:
