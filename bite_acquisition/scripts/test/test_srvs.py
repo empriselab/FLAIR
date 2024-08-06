@@ -47,9 +47,9 @@ def get_wrist_state():
 
 def main():
     rospy.init_node('test_srvs')
-    joint_velocity = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -math.pi/3]
+    # joint_velocity = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -math.pi/3]
     timeout = 18.0
-    success = set_joint_velocity(joint_velocity, timeout)
+    # success = set_joint_velocity(joint_velocity, timeout)
     print(success)
 
 if __name__ == "__main__":

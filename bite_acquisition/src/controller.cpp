@@ -414,6 +414,39 @@ bool Controller::setJointPosition(bite_acquisition::JointCommandRequest &request
     std::cout << "Angular movement completed" << std::endl;
     std::cout << "Promise value : " << k_api::Base::ActionEvent_Name(promise_event) << std::endl; 
 
+    k_api::Base::Finger* finger;
+    k_api::Base::GripperCommand gripper_command;
+    finger = gripper_command.mutable_gripper()->add_finger();
+    finger->set_finger_identifier(1);
+
+    int finger_index = actuator_count.count();
+
+    std::cout << "Sending gripper position command: " << request.command[finger_index] << std::endl;
+
+    finger->set_value(request.command[finger_index]);
+    gripper_command.set_mode(k_api::Base::GRIPPER_POSITION);
+    try
+    {
+    mBase->SendGripperCommand(gripper_command);
+    }
+    catch (k_api::KDetailedException& ex)
+    {
+    std::cout << "Kortex exception: " << ex.what() << std::endl;
+
+    std::cout << "Error sub-code: "
+                << k_api::SubErrorCodes_Name(k_api::SubErrorCodes(
+                        (ex.getErrorInfo().getError().error_sub_code())))
+                << std::endl;
+    }
+    catch (std::runtime_error& ex2)
+    {
+    std::cout << "runtime error: " << ex2.what() << std::endl;
+    }
+    catch (...)
+    {
+    std::cout << "Unknown error." << std::endl;
+    }
+
     return true;
 }
 

@@ -3,6 +3,7 @@ import rospy
 from bite_acquisition.srv import PoseCommand, PoseCommandRequest, PoseCommandResponse
 from bite_acquisition.srv import JointCommand, JointCommandRequest, JointCommandResponse
 
+
 from .base import RobotController
 
 class KinovaRobotController(RobotController):
@@ -47,12 +48,15 @@ if __name__ == '__main__':
     rospy.init_node('robot_controller', anonymous=True)
     robot_controller = KinovaRobotController()
 
-    input('Press enter to move to acquisition position...')
-    robot_controller.move_to_acq_pose()
+    # input('Press enter to move to acquisition position...')
+    # robot_controller.move_to_acq_pose()
 
-    input('Press enter to move to transfer position...')
-    robot_controller.move_to_transfer_pose()
+    # input('Press enter to move to transfer position...')
+    # robot_controller.move_to_transfer_pose()
+    
 
-    input('Press enter to reset the robot...')
-    robot_controller.reset()
+    robot_controller.set_joint_position([6.26643082812968, 5.964520505888411, 3.226885713821761, 4.113400641700101, 0.44228980435708964, 6.056389443484003, 1.5805738564210134])
+
+    # input('Press enter to reset the robot...')
+    # robot_controller.reset()
         

@@ -5,7 +5,7 @@
     <arg name="password" default="admin" doc="Password for kortex session"/>
     <arg name="api_session_inactivity_timeout_ms" default="35000"/> <!--milliseconds-->
     <arg name="api_connection_inactivity_timeout_ms" default="20000"/> <!--milliseconds-->
-    <arg name="dof" default="6"/> <!--degrees of freedom-->
+    <arg name="dof" default="7"/> <!--degrees of freedom-->
 
     <!-- Gen3 Hardware Node -->
     <node name="controller" pkg="bite_acquisition" type="controller" output="screen">
@@ -16,7 +16,7 @@
         <param name="api_connection_inactivity_timeout_ms" value="$(arg api_connection_inactivity_timeout_ms)"/>
     </node>
 
-    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find kortex_description)/robots/gen3_robotiq_2f_85.xacro dof:=$(arg dof) sim:=false vision:=true feeding_utensil:=true" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find kortex_description)/robots/gen3_robotiq_2f_85.xacro dof:=$(arg dof) sim:=false vision:=false feeding_utensil:=false" />
 
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
         <param name="use_gui" value="false"/>
@@ -31,7 +31,7 @@
 
     <node name="st_map2world" pkg="tf" type="static_transform_publisher" respawn="false" output="screen" args="0 0 0 0 0 0 1 map world 10"/>
 
-    <!-- <include file="$(find realsense2_camera)/launch/rs_rgbd.launch"/> -->
+    <include file="$(find realsense2_camera)/launch/rs_rgbd.launch"/>
 
     <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
       args="0.026 0.063 0.031 0.5  0.5  0.5 -0.5 end_effector_link camera_link" />   BEST VALUES WITH 0.5 ROTATIONS -->
@@ -46,7 +46,10 @@
     <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
       args="0.01823 0.06065 0.0285 0.5  0.5  0.5 -0.5 end_effector_link camera_link" /> -->
 
-    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
-      args="0.01 0.0615 0.03 0.5  0.5  0.5 -0.5 end_effector_link camera_link" />
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
+      args="0.01 0.0615 0.03 0.5  0.5  0.5 -0.5 end_effector_link camera_link" /> -->
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="bottom_camera_link_broadcaster" 
+      args="0.0122 -0.059  0.034 0.50080661  0.49902445  0.50068027 -0.49948635 end_effector_link camera_link" /> 
 
 </launch>
