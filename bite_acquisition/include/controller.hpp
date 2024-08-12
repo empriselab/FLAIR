@@ -80,6 +80,9 @@ class Controller
         std::vector <double> mFTSensorValues;
         void tareFTSensorCallback(const std_msgs::Bool& msg);
 
+        ros::Subscriber mEStopSub;
+        void eStopCallback(const std_msgs::Bool& msg);
+
         std::atomic<bool> mUpdateForceThreshold;
         std::vector <double> mForceThreshold;
         std::vector <double> mNewForceThreshold;

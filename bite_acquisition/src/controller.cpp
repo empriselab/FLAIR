@@ -118,6 +118,8 @@ Controller::Controller(ros::NodeHandle nh)
     mFTSensorValues = std::vector<double>(6, 0.0);
     mForceThreshold = std::vector<double>(6, 1000.0);
 
+    mEStopSub = nh.subscribe("estop", 10, &Controller::eStopCallback, this);
+
     mWatchdogActive = true;
     ROS_INFO("Controller initialized");
 }
@@ -157,6 +159,31 @@ inline double Controller::degreesToRadians(double degrees)
 inline double Controller::radiansToDegrees(double radians)
 {
     return (180.0 / M_PI) * radians;
+}
+
+void Controller::eStopCallback(const std_msgs::Bool& msg)
+{
+    if (msg.data)
+    {
+        ROS_INFO("E-Stop activated");
+        try
+        {
+            mBase->Stop();
+        }
+        catch (k_api::KDetailedException& ex)
+        {
+            std::cout << "Kortex exception: " << ex.what() << std::endl;
+
+            std::cout << "Error sub-code: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes((ex.getErrorInfo().getError().error_sub_code()))) << std::endl;
+        }
+    }
+    else
+    {
+        ROS_ERROR("False message received on E-Stop topic - this should not happen");
+    }
+
+    ROS_ERROR("Dead because of E-Stop");
+    ros::shutdown();
 }
 
 void Controller::tareFTSensorCallback(const std_msgs::Bool& msg)
