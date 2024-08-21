@@ -2,7 +2,10 @@ import rospy
 
 from bite_acquisition.srv import PoseCommand, PoseCommandRequest, PoseCommandResponse
 from bite_acquisition.srv import JointCommand, JointCommandRequest, JointCommandResponse
+from bite_acquisition.srv import JointWaypointsCommand, JointWaypointsCommandRequest, JointWaypointsCommandResponse
+from bite_acquisition.srv import GripperCommand, GripperCommandRequest, GripperCommandResponse
 
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from .base import RobotController
 
@@ -36,6 +39,37 @@ class KinovaRobotController(RobotController):
         except rospy.ServiceException as e:
             print("Service call failed: %s"%e)
 
+    def set_joint_waypoints(self, joint_waypoints):
+        print("Calling set_joint_waypoints with joint_waypoints")
+        rospy.wait_for_service('set_joint_waypoints')
+        try:
+            move_to_joint_waypoints = rospy.ServiceProxy('set_joint_waypoints', JointWaypointsCommand)
+
+            target_waypoints = JointTrajectory()
+            target_waypoints.joint_names = ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7"]
+            
+            for waypoint in joint_waypoints:
+                point = JointTrajectoryPoint()
+                point.positions = waypoint
+                target_waypoints.points.append(point)
+            
+            resp1 = move_to_joint_waypoints(target_waypoints, 100.0)
+            return resp1.success
+        
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+
+    def set_gripper(self, gripper_target):
+        print("Calling set_gripper with gripper_target: ", gripper_target)
+        rospy.wait_for_service('set_joint_waypoints')
+        try:
+            set_gripper = rospy.ServiceProxy('set_gripper', GripperCommand)
+            resp1 = set_gripper(gripper_target)
+            return resp1.success
+        
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+
     def move_to_acq_pose(self):
         print('Moving to acq pose')
         self.set_joint_position(self.acq_pos)
@@ -55,7 +89,8 @@ if __name__ == '__main__':
     # robot_controller.move_to_transfer_pose()
     
 
-    robot_controller.set_joint_position([6.26643082812968, 5.964520505888411, 3.226885713821761, 4.113400641700101, 0.44228980435708964, 6.056389443484003, 1.5805738564210134])
+    robot_controller.set_gripper(0.0)
+    # robot_controller.set_joint_position([6.26643082812968, 5.964520505888411, 3.226885713821761, 4.113400641700101, 0.44228980435708964, 6.056389443484003, 1.5805738564210134])
 
     # input('Press enter to reset the robot...')
     # robot_controller.reset()

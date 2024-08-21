@@ -108,10 +108,12 @@ Controller::Controller(ros::NodeHandle nh)
     mRobotStateTimer = nh.createTimer(ros::Duration(0.01),  &Controller::publishState, this);
 
     mSetJointPositionService = nh.advertiseService("set_joint_position", &Controller::setJointPosition, this);
+    mSetJointWaypointsService = nh.advertiseService("set_joint_waypoints", &Controller::setJointWaypoints, this);
     mSetJointVelocityService = nh.advertiseService("set_joint_velocity", &Controller::setJointVelocity, this);
     mSetPoseService = nh.advertiseService("set_pose", &Controller::setPose, this);
     mSetPoseWaypointsService = nh.advertiseService("set_pose_waypoints", &Controller::setPoseWaypoints, this);
     mSetTwistService = nh.advertiseService("set_twist", &Controller::setTwist, this);
+    mSetGripperService = nh.advertiseService("set_gripper", &Controller::setGripper, this);
 
     mTareFTSensorSub = nh.subscribe("tare_ft_sensor", 10, &Controller::tareFTSensorCallback, this);
     mZeroFTSensorValues = std::vector<double>(6, 0.0);
@@ -153,7 +155,7 @@ Controller::~Controller()
 
 inline double Controller::degreesToRadians(double degrees)
 {
-    return (M_PI / 180.0) * degrees;
+    double radians = (M_PI / 180.0) * degrees;
 }
 
 inline double Controller::radiansToDegrees(double radians)
@@ -220,7 +222,10 @@ void Controller::publishState(const ros::TimerEvent& event)
     for (std::size_t i = 0; i < actuator_count; ++i)
     {
         joint_state.name.push_back("joint_" + std::to_string(i + 1));
-        joint_state.position.push_back(degreesToRadians(double(mLastFeedback.actuators(i).position())));
+        double pos = degreesToRadians(double(mLastFeedback.actuators(i).position()));
+        if (pos > M_PI)
+            pos -= 2*M_PI;
+        joint_state.position.push_back(pos);
         joint_state.velocity.push_back(degreesToRadians(double(mLastFeedback.actuators(i).velocity())));
         joint_state.effort.push_back(double(mLastFeedback.actuators(i).torque()));
     }
@@ -377,6 +382,138 @@ bool Controller::setJointVelocity(bite_acquisition::JointCommandRequest &request
     return true;
 }
 
+bool Controller::setJointWaypoints(bite_acquisition::JointWaypointsCommandRequest &request, bite_acquisition::JointWaypointsCommandResponse &response)
+{
+    ROS_INFO("Received trajectory waypoints command");
+
+    try
+    {
+        mBase->StopAction();
+    }
+    catch (k_api::KDetailedException& ex)
+    {
+        std::cout << "Kortex exception: " << ex.what() << std::endl;
+
+        std::cout << "Error sub-code: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes((ex.getErrorInfo().getError().error_sub_code()))) << std::endl;
+    }
+
+    bool success = false;
+
+    // Create the trajectory 
+    k_api::Base::WaypointList wpts = k_api::Base::WaypointList();
+
+    // Binded to degrees of movement and each degrees correspond to one degree of liberty
+    auto actuators = mBase->GetActuatorCount();
+    const int degreesOfFreedom = 7;
+    const float firstTime = 0.5f;
+    for (size_t index = 0; index < request.target_waypoints.points.size(); ++index)
+    {
+        k_api::Base::Waypoint *wpt = wpts.add_waypoints();
+        if(wpt != nullptr)
+        {
+            wpt->set_name(std::string("waypoint_") + std::to_string(index));
+            k_api::Base::AngularWaypoint *ang = wpt->mutable_angular_waypoint();
+            if(ang != nullptr)
+            {    
+                for(auto angleIndex = 0;angleIndex < degreesOfFreedom; ++angleIndex)
+                {
+                    ang->add_angles(radiansToDegrees(request.target_waypoints.points[index].positions[angleIndex]));
+                }
+                ang->set_duration(firstTime);
+            }
+        }   
+        std::cout << "Waypoint " << index << " created" << std::endl;     
+    }
+
+    // Connect to notification action topic
+    std::promise<k_api::Base::ActionEvent> finish_promise_cart;
+    auto finish_future_cart = finish_promise_cart.get_future();
+    auto promise_notification_handle_cart = mBase->OnNotificationActionTopic( create_event_listener_by_promise(finish_promise_cart),
+                                                                            k_api::Common::NotificationOptions());
+
+    k_api::Base::WaypointValidationReport result;
+    try
+    {
+        // Verify validity of waypoints
+        auto validationResult = mBase->ValidateWaypointList(wpts);
+        result = validationResult;
+    }
+    catch(k_api::KDetailedException& ex)
+    {
+        std::cout << "Try catch error on waypoint list" << std::endl;
+        // You can print the error informations and error codes
+        auto error_info = ex.getErrorInfo().getError();
+        std::cout << "KDetailedoption detected what:  " << ex.what() << std::endl;
+        
+        std::cout << "KError error_code: " << error_info.error_code() << std::endl;
+        std::cout << "KError sub_code: " << error_info.error_sub_code() << std::endl;
+        std::cout << "KError sub_string: " << error_info.error_sub_string() << std::endl;
+
+        // Error codes by themselves are not very verbose if you don't see their corresponding enum value
+        // You can use google::protobuf helpers to get the string enum element for every error code and sub-code 
+        std::cout << "Error code string equivalent: " << k_api::ErrorCodes_Name(k_api::ErrorCodes(error_info.error_code())) << std::endl;
+        std::cout << "Error sub-code string equivalent: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes(error_info.error_sub_code())) << std::endl;
+        return false;
+    }
+    
+    // Trajectory error report always exists and we need to make sure no elements are found in order to validate the trajectory
+    if(result.trajectory_error_report().trajectory_error_elements_size() == 0)
+    {    
+        // Execute action
+        try
+        {
+            // Move arm with waypoints list
+            std::cout << "Moving the arm creating a trajectory of " << request.target_waypoints.points.size() << " angular waypoints" << std::endl;
+            mBase->ExecuteWaypointTrajectory(wpts);
+        }
+        catch(k_api::KDetailedException& ex)
+        {
+            std::cout << "Try catch error executing normal trajectory" << std::endl;
+            // You can print the error informations and error codes
+            auto error_info = ex.getErrorInfo().getError();
+            std::cout << "KDetailedoption detected what:  " << ex.what() << std::endl;
+            
+            std::cout << "KError error_code: " << error_info.error_code() << std::endl;
+            std::cout << "KError sub_code: " << error_info.error_sub_code() << std::endl;
+            std::cout << "KError sub_string: " << error_info.error_sub_string() << std::endl;
+
+            // Error codes by themselves are not very verbose if you don't see their corresponding enum value
+            // You can use google::protobuf helpers to get the string enum element for every error code and sub-code 
+            std::cout << "Error code string equivalent: " << k_api::ErrorCodes_Name(k_api::ErrorCodes(error_info.error_code())) << std::endl;
+            std::cout << "Error sub-code string equivalent: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes(error_info.error_sub_code())) << std::endl;
+            return false;
+        }
+        // Wait for future value from promise
+        const auto ang_status = finish_future_cart.wait_for(TIMEOUT_DURATION);
+
+        mBase->Unsubscribe(promise_notification_handle_cart);
+
+        if(ang_status != std::future_status::ready)
+        {
+            std::cout << "Timeout on action notification wait for angular waypoint trajectory" << std::endl;
+        }
+        else
+        {
+            const auto ang_promise_event = finish_future_cart.get();
+            std::cout << "Angular waypoint trajectory completed" << std::endl;
+            std::cout << "Promise value : " << k_api::Base::ActionEvent_Name(ang_promise_event) << std::endl; 
+
+            success = true;
+
+            // We are now ready to reuse the validation output to test default trajectory generated...
+            // Here we need to understand that trajectory using angular waypoint is never optimized.
+            // In other words the waypoint list is the same and this is a limitation of Kortex API for now
+        }
+    }
+    else
+    {
+        std::cout << "Error found in trajectory" << std::endl; 
+        result.trajectory_error_report().PrintDebugString();        
+    }
+
+    return success;
+}
+
 bool Controller::setJointPosition(bite_acquisition::JointCommandRequest &request, bite_acquisition::JointCommandResponse &response)
 {
     ROS_INFO("Got joint position command");
@@ -441,41 +578,58 @@ bool Controller::setJointPosition(bite_acquisition::JointCommandRequest &request
     std::cout << "Angular movement completed" << std::endl;
     std::cout << "Promise value : " << k_api::Base::ActionEvent_Name(promise_event) << std::endl; 
 
+    return true;
+}
+
+bool Controller::setGripper(bite_acquisition::GripperCommandRequest &request, bite_acquisition::GripperCommandResponse &response)
+{
+    ROS_INFO("Received gripper command");
+
+    try
+    {
+        mBase->StopAction();
+    }
+    catch (k_api::KDetailedException& ex)
+    {
+        std::cout << "Kortex exception: " << ex.what() << std::endl;
+
+        std::cout << "Error sub-code: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes((ex.getErrorInfo().getError().error_sub_code()))) << std::endl;
+    }
+
     k_api::Base::Finger* finger;
     k_api::Base::GripperCommand gripper_command;
     finger = gripper_command.mutable_gripper()->add_finger();
     finger->set_finger_identifier(1);
 
-    int finger_index = actuator_count.count();
+    std::cout << "Sending gripper position command: " << request.command << std::endl;
 
-    std::cout << "Sending gripper position command: " << request.command[finger_index] << std::endl;
-
-    finger->set_value(request.command[finger_index]);
+    finger->set_value(request.command);
     gripper_command.set_mode(k_api::Base::GRIPPER_POSITION);
     try
     {
-    mBase->SendGripperCommand(gripper_command);
+        mBase->SendGripperCommand(gripper_command);
     }
     catch (k_api::KDetailedException& ex)
     {
-    std::cout << "Kortex exception: " << ex.what() << std::endl;
+        std::cout << "Kortex exception: " << ex.what() << std::endl;
 
-    std::cout << "Error sub-code: "
-                << k_api::SubErrorCodes_Name(k_api::SubErrorCodes(
-                        (ex.getErrorInfo().getError().error_sub_code())))
-                << std::endl;
+        std::cout << "Error sub-code: "
+                    << k_api::SubErrorCodes_Name(k_api::SubErrorCodes(
+                            (ex.getErrorInfo().getError().error_sub_code())))
+                    << std::endl;
     }
     catch (std::runtime_error& ex2)
     {
-    std::cout << "runtime error: " << ex2.what() << std::endl;
+        std::cout << "runtime error: " << ex2.what() << std::endl;
     }
     catch (...)
     {
-    std::cout << "Unknown error." << std::endl;
+        std::cout << "Unknown error." << std::endl;
     }
 
     return true;
 }
+
 
 bool Controller::setPose(bite_acquisition::PoseCommandRequest &request, bite_acquisition::PoseCommandResponse &response)
 {

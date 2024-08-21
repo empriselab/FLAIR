@@ -29,9 +29,11 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "bite_acquisition/CartesianState.h"
 #include "bite_acquisition/JointCommand.h"
+#include "bite_acquisition/JointWaypointsCommand.h"
 #include "bite_acquisition/PoseCommand.h"
 #include "bite_acquisition/PoseWaypointsCommand.h"
 #include "bite_acquisition/TwistCommand.h"
+#include "bite_acquisition/GripperCommand.h"
 
 #define TCP_PORT 10000
 
@@ -55,16 +57,20 @@ class Controller
 
         // ros services for joint position, pose and twise control
         bool setJointPosition(bite_acquisition::JointCommandRequest &request, bite_acquisition::JointCommandResponse &response);
+        bool setJointWaypoints(bite_acquisition::JointWaypointsCommandRequest &request, bite_acquisition::JointWaypointsCommandResponse &response);
         bool setJointVelocity(bite_acquisition::JointCommandRequest &request, bite_acquisition::JointCommandResponse &response);
         bool setPose(bite_acquisition::PoseCommandRequest &request, bite_acquisition::PoseCommandResponse &response);
         bool setPoseWaypoints(bite_acquisition::PoseWaypointsCommandRequest &request, bite_acquisition::PoseWaypointsCommandResponse &response);
         bool setTwist(bite_acquisition::TwistCommandRequest &request, bite_acquisition::TwistCommandResponse &response);
+        bool setGripper(bite_acquisition::GripperCommandRequest &request, bite_acquisition::GripperCommandResponse &response);
 
         ros::ServiceServer mSetJointPositionService;
+        ros::ServiceServer mSetJointWaypointsService;
         ros::ServiceServer mSetJointVelocityService;
         ros::ServiceServer mSetPoseService;
         ros::ServiceServer mSetPoseWaypointsService;
         ros::ServiceServer mSetTwistService;
+        ros::ServiceServer mSetGripperService;
 
         std::atomic<bool> mWatchdogActive;
 

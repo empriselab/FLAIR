@@ -1,0 +1,5 @@
+trajectory_msgs/JointTrajectory target_waypoints
+float64 force_threshold
+---
+bool success
+string error_msg

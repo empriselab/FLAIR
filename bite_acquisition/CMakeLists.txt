@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   geometry_msgs
+  trajectory_msgs
   sensor_msgs
   message_generation
 )
@@ -24,9 +25,11 @@ add_message_files(
 add_service_files(
     FILES
     JointCommand.srv
+    JointWaypointsCommand.srv
     PoseCommand.srv
     PoseWaypointsCommand.srv
     TwistCommand.srv
+    GripperCommand.srv
     Segmentation.srv
     VQA.srv
 )
@@ -35,6 +38,7 @@ generate_messages(
     DEPENDENCIES
     geometry_msgs
     sensor_msgs
+    trajectory_msgs
 )
 
 find_package(Boost REQUIRED COMPONENTS system)

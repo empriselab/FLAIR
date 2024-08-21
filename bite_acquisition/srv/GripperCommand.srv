@@ -1,0 +1,4 @@
+float64 command
+---
+bool success
+string error_msg
