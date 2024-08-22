@@ -16,12 +16,13 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import String, Float64, Bool
 
 import threading
-import utils
+import flair_utils
 import cmath
 import yaml
 import argparse
 
-ROBOT = 'kinova-deployment' # 'kinova' or 'franka' or 'kinova-deployment' (used for controller on the NUC)
+# ROBOT = 'kinova-deployment' # 'kinova' or 'franka' or 'kinova-deployment' (used for controller on the NUC)
+ROBOT = 'kinova'    
 
 from rs_ros import RealSenseROS
 from pixel_selector import PixelSelector
@@ -51,7 +52,7 @@ class SkillLibrary:
         self.wrist_controller = WristController()
 
         self.pixel_selector = PixelSelector()
-        self.tf_utils = utils.TFUtils()
+        self.tf_utils = flair_utils.TFUtils()
         self.visualizer = Visualizer()
 
         self.beep_publisher = rospy.Publisher('/beep', String, queue_size=10)
@@ -101,16 +102,16 @@ class SkillLibrary:
         # action 1: angle the wrist to scoop angle
         self.wrist_controller.set_to_scoop_pos()
 
-        push_angle = utils.angle_between_pixels(np.array(start), np.array(end), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
+        push_angle = flair_utils.angle_between_pixels(np.array(start), np.array(end), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
         # push_angle = push_angle - 180
         print("Push angle: ", push_angle)
         
-        validity, lowest_point = utils.pixel2World(camera_info, start[0], start[1], depth_image)
+        validity, lowest_point = flair_utils.pixel2World(camera_info, start[0], start[1], depth_image)
         if not validity:
             print("Invalid lowest point")
             return
         
-        validity, center_point = utils.pixel2World(camera_info, end[0], end[1], depth_image)
+        validity, center_point = flair_utils.pixel2World(camera_info, end[0], end[1], depth_image)
         if not validity:
             print("Invalid center point")
             return
@@ -188,7 +189,7 @@ class SkillLibrary:
         cv2.imshow('vis', color_image)
 
         # get 3D point from depth image
-        validity, point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
+        validity, point = flair_utils.pixel2World(camera_info, center_x, center_y, depth_image)
 
         if not validity:
             print("Invalid point")
@@ -251,7 +252,7 @@ class SkillLibrary:
                 clicks[0], clicks[1] = clicks[1], clicks[0]
             else:
                 center_x, center_y = right_x, right_y
-            cutting_angle = utils.angle_between_pixels(np.array(clicks[0]), np.array(clicks[1]), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
+            cutting_angle = flair_utils.angle_between_pixels(np.array(clicks[0]), np.array(clicks[1]), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
 
         # visualize cutting point and line between left and right points
         cv2.circle(color_image, (center_x, center_y), 5, (0, 0, 255), -1)
@@ -261,7 +262,7 @@ class SkillLibrary:
         cv2.waitKey(0)
 
         # get 3D point from depth image
-        validity, point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
+        validity, point = flair_utils.pixel2World(camera_info, center_x, center_y, depth_image)
 
         if not validity:
             print("Invalid point")
@@ -334,7 +335,7 @@ class SkillLibrary:
         print(f"Center x {center_x}, Center y {center_y}, Action index {action_index}")
 
         # get 3D point from depth image
-        validity, point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
+        validity, point = flair_utils.pixel2World(camera_info, center_x, center_y, depth_image)
 
         if not validity:
             print("Invalid point")
@@ -401,14 +402,14 @@ class SkillLibrary:
             start = clicks[0]
             end = clicks[1]
         
-        validity, end_vec_3d = utils.pixel2World(camera_info, end[0], end[1], depth_image)
+        validity, end_vec_3d = flair_utils.pixel2World(camera_info, end[0], end[1], depth_image)
         if not validity:
             print("Invalid depth detected")
             return
 
-        push_angle = utils.angle_between_pixels(np.array(start), np.array(end), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
+        push_angle = flair_utils.angle_between_pixels(np.array(start), np.array(end), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
 
-        validity, start_vec_3d = utils.pixel2World(camera_info, start[0], start[1], depth_image)
+        validity, start_vec_3d = flair_utils.pixel2World(camera_info, start[0], start[1], depth_image)
         if not validity:
             print("Invalid depth detected")
             return
@@ -464,7 +465,7 @@ class SkillLibrary:
             (center_x, center_y) = clicks[0]
             twirl_angle = 90
 
-        validity, center_point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
+        validity, center_point = flair_utils.pixel2World(camera_info, center_x, center_y, depth_image)
         if not validity:
             print("Invalid center pixel")
             return
@@ -565,6 +566,10 @@ if __name__ == "__main__":
         manager.connect()
         robot_controller = manager.Arm()
 
+        # Rajat Just for testing
+        above_plate_pos = [4.119619921793763, 5.927367810785151, 4.797271913808785, 4.641709217686205, 4.980350922946283, 5.268199221999715, 4.814377930122582]
+        robot_controller.set_joint_position(above_plate_pos)
+
         def publish_joint_states(arm):
 
             # publish joint states
@@ -599,9 +604,9 @@ if __name__ == "__main__":
     camera = RealSenseROS()
     camera_header, camera_color_data, camera_info_data, camera_depth_data = camera.get_camera_data()
 
-    skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
+    # skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
 
-    # skill_library.scooping_skill(camera_color_data, camera_depth_data, camera_info_data)
+    skill_library.scooping_skill(camera_color_data, camera_depth_data, camera_info_data)
 
     # skill_library.dipping_skill(camera_color_data, camera_depth_data, camera_info_data)
 

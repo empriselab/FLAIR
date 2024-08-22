@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, "..")
 
-import utils
+import flair_utils
 from skill_library import SkillLibrary
 import rospy
 import cv2
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     rospy.init_node('test_speed')
     time.sleep(1.0)
 
-    tf_utils = utils.TFUtils()
+    tf_utils = flair_utils.TFUtils()
 
     skill_library = SkillLibrary()
     skill_library.reset()

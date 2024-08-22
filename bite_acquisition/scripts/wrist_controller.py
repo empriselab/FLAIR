@@ -8,8 +8,11 @@ from wrist_driver_interfaces.msg import SimpleJointAngleCommand
 from wrist_driver_interfaces.srv import SetWristMode, SetWristModeRequest, SetWristModeResponse
 
 class WristController:
-    def __init__(self):
+    def __init__(self, offset_pitch=0, offset_roll=0):
         self.wrist_state_pub = rospy.Publisher('/cmd_wrist_joint_angles', SimpleJointAngleCommand, queue_size=10)
+
+        self.offset_pitch = offset_pitch
+        self.offset_roll = offset_roll
 
         # set wrist control mode to velocity
         rospy.wait_for_service('set_wrist_mode')
@@ -25,27 +28,33 @@ class WristController:
 
     def reset(self):
         wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
-        current_pitch = wrist_joint_states.position[0]
-        current_roll = wrist_joint_states.position[1]
+        current_pitch = -wrist_joint_states.position[0]
+        current_roll = -wrist_joint_states.position[1]
 
-        self.set_wrist_state(0,0)
+        self.set_wrist_state(0, 0)
 
-    def set_wrist_state(self, pitch, roll, vel=4):
+    def set_wrist_state(self, pitch, roll, vel=4, use_offset=True):
 
-        desired_pitch = pitch
-        desired_roll = roll
+        if use_offset:
+            desired_pitch = -pitch + self.offset_pitch
+            desired_roll = -roll + self.offset_roll
+        else:
+            desired_pitch = -pitch
+            desired_roll = -roll    
 
         wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
 
-        pitch_achieved = np.abs(wrist_joint_states.position[0] - desired_pitch) < 0.01
-        roll_achieved = np.abs(wrist_joint_states.position[1] - desired_roll) < 0.01
-        while (not pitch_achieved) or (not roll_achieved):
+        pitch_achieved = np.abs(wrist_joint_states.position[0] - desired_pitch) < 0.02
+        roll_achieved = np.abs(wrist_joint_states.position[1] - desired_roll) < 0.02
+        while (not pitch_achieved):
+
+        # while (not pitch_achieved) or (not roll_achieved):
             wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
             current_pitch = wrist_joint_states.position[0]
             current_roll = wrist_joint_states.position[1]
 
-            pitch_achieved = np.abs(current_pitch - desired_pitch) < 0.01
-            roll_achieved = np.abs(current_roll - desired_roll) < 0.01
+            pitch_achieved = np.abs(current_pitch - desired_pitch) < 0.02
+            roll_achieved = np.abs(current_roll - desired_roll) < 0.02
             
             wrist_state = SimpleJointAngleCommand()
             if not pitch_achieved:
@@ -87,11 +96,11 @@ class WristController:
         # handle wrist disconnecting and other errors
         try:
             wrist_state = SimpleJointAngleCommand()
-            wrist_state.q0 = 1.0
+            wrist_state.q0 = -1.0
             wrist_state.q1 = 0
             self.wrist_state_pub.publish(wrist_state)
 
-            desired_pitch = 0.4 * math.pi
+            desired_pitch = - 0.4 * math.pi
             wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
             pitch_achieved = np.abs(wrist_joint_states.position[0] - desired_pitch) < 0.05
             while not pitch_achieved:
@@ -129,11 +138,11 @@ class WristController:
     def scoop_wrist(self):
 
         wrist_state = SimpleJointAngleCommand()
-        wrist_state.q0 = 1.35
+        wrist_state.q0 = -1.35
         wrist_state.q1 = 0
         self.wrist_state_pub.publish(wrist_state)
 
-        desired_pitch = 0.4 * math.pi
+        desired_pitch = -0.4 * math.pi
         wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
         pitch_achieved = np.abs(wrist_joint_states.position[0] - desired_pitch) < 0.05
         while not pitch_achieved:
@@ -170,15 +179,16 @@ class WristController:
         current_roll = -wrist_joint_states.position[1]
 
         desired_roll = current_roll - 4 * math.pi
-        self.set_wrist_state(current_pitch, desired_roll, vel=vel)
+        self.set_wrist_state(current_pitch, desired_roll, vel=vel, use_offset=False)
 
     def set_to_scoop_pos(self):
         wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
         current_pitch = -wrist_joint_states.position[0]
         current_roll = -wrist_joint_states.position[1]
 
+        print("current_roll: ", current_roll)
         # find nearest multiple of math.pi *2 for current_pitch and current_roll
-        target_roll = round(current_roll / (math.pi * 2)) * math.pi * 2
+        target_roll = round( (current_roll) / (math.pi * 2)) * math.pi * 2
         self.set_wrist_state(1.0,target_roll)
 
     def set_to_dip_pos(self):
@@ -214,13 +224,17 @@ class WristController:
 
 if __name__ == '__main__':
     rospy.init_node('wrist_controller', anonymous=True)
-    wrist_controller = WristController()
+    wrist_controller = WristController(offset_pitch=0.0, offset_roll=0.0)
     wrist_controller.reset()
-    # wrist_controller.set_to_scoop_pos()
+    wrist_controller.set_to_scoop_pos()
+    # wrist_controller.reset()
+    # wrist_controller.set_to_cut_pos()
+    # wrist_controller.reset()
+    # wrist_controller.twirl_wrist(vel=8)
+
+    # wrist_controller.set_wrist_state(0.4 * math.pi, 0.4 * math.pi)
+    
     # wrist_controller.set_to_cut_pos()
     # wrist_controller.twirl_wrist(vel=8)
     # wrist_controller.scoop_wrist()
-    wrist_controller.scoop_wrist_hack()
-    
-
-   
+    # wrist_controller.scoop_wrist_hack()

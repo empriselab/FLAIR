@@ -12,9 +12,9 @@ from torchvision.transforms import ToTensor, Compose
 from groundingdino.util.inference import Model
 from segment_anything import sam_model_registry, SamPredictor
 
-from .vision_utils import detect_densest, new_detect_densest, detect_sparsest, detect_centroid, detect_angular_bbox, detect_convex_hull, detect_filling_push_noodles, detect_filling_push_semisolid, efficient_sam_box_prompt_segment, outpaint_masks, detect_blue, proj_pix2mask, cleanup_mask, visualize_keypoints, visualize_skewer, visualize_push, detect_plate, mask_weight, nearest_neighbor, nearest_point_to_mask, detect_furthest_unobstructed_boundary_point, calculate_heatmap_density, calculate_heatmap_entropy, resize_to_square, fill_enclosing_polygon, detect_fillings_in_mask, expanded_detect_furthest_unobstructed_boundary_point
+from vision_utils import detect_densest, new_detect_densest, detect_sparsest, detect_centroid, detect_angular_bbox, detect_convex_hull, detect_filling_push_noodles, detect_filling_push_semisolid, efficient_sam_box_prompt_segment, outpaint_masks, detect_blue, proj_pix2mask, cleanup_mask, visualize_keypoints, visualize_skewer, visualize_push, detect_plate, mask_weight, nearest_neighbor, nearest_point_to_mask, detect_furthest_unobstructed_boundary_point, calculate_heatmap_density, calculate_heatmap_entropy, resize_to_square, fill_enclosing_polygon, detect_fillings_in_mask, expanded_detect_furthest_unobstructed_boundary_point
 
-from .preference_planner import PreferencePlanner
+from preference_planner import PreferencePlanner
 
 import os
 from openai import OpenAI
@@ -26,13 +26,13 @@ import requests
 import cmath
 import math
 
-from .src.food_pos_ori_net.model.minispanet import MiniSPANet
-from .src.spaghetti_segmentation.model import SegModel
+from src.food_pos_ori_net.model.minispanet import MiniSPANet
+from src.spaghetti_segmentation.model import SegModel
 import torchvision.transforms as transforms
 
-PATH_TO_GROUNDED_SAM = '/home/rkjenamani/Grounded-Segment-Anything'
-PATH_TO_DEPTH_ANYTHING = '/home/rkjenamani/Depth-Anything'
-PATH_TO_SPAGHETTI_CHECKPOINTS = '/home/rkjenamani/flair_ws/src/bite_acquisition/spaghetti_checkpoints'
+PATH_TO_GROUNDED_SAM = '/home/isacc/Grounded-Segment-Anything'
+PATH_TO_DEPTH_ANYTHING = '/home/isacc/Depth-Anything'
+PATH_TO_SPAGHETTI_CHECKPOINTS = '/home/isacc/deployment_ws/src/FLAIR/bite_acquisition/spaghetti_checkpoints'
 USE_EFFICIENT_SAM = False
 
 sys.path.append(PATH_TO_DEPTH_ANYTHING)
@@ -405,6 +405,10 @@ class BiteAcquisitionInference:
 
         if log_path is not None:
             cv2.imwrite(log_path + "_scoop_action_vis.png", color_image_vis)
+
+        # visualize scoop action 
+        cv2.imshow("Scoop Action", color_image_vis)
+        cv2.waitKey(0)
 
         if action == 'Acquire':
             heatmap = visualize_push(heatmap, furthest_unobstructed_boundary_point, densest, radius=2, color=(0,255,0))
@@ -838,6 +842,7 @@ class BiteAcquisitionInference:
                 
                 if 'mashed' in label or 'oatmeal' in label:
                     clean_mask = outpaint_masks(clean_mask.copy(), individual_masks[:i] + individual_masks[i+1:])
+                    mask_vis = (clean_mask.copy() > 0).astype(np.uint8) * 255
 
                     # use depth to clean up mask; crop image to just plate before running depth anything
                     print('-------------- RUNNING DEPTH ANYTHING')
@@ -1148,7 +1153,8 @@ class BiteAcquisitionInference:
                     efficiency_scores.append(2.5) # Should this be even higher?
                     next_actions.append((idx, 'Group', {'start':sparsest, 'end':densest}))
             elif categories[idx] == 'semisolid':
-                densest, sparsest, filling_push_start, filling_push_end, valid_actions, valid_actions_vis, heatmap, action, start_px, end_px = self.get_scoop_action(image, masks, categories, log_path)
+                densest, furthest_unobstructed_boundary_point, filling_push_start, filling_push_end, valid_actions, action_vis_mask, heatmap, action, start_px, end_px, color_image_vis, semisolid_mask, furthest_unobstructed_boundary_point_vis  = self.get_scoop_action(image, masks, categories, log_path)
+                # densest, sparsest, filling_push_start, filling_push_end, valid_actions, valid_actions_vis, heatmap, action, start_px, end_px = self.get_scoop_action(image, masks, categories, log_path)
                 if action == 'Acquire':
                     efficiency_scores.append(1)
                     next_actions.append((idx, 'Scoop', {'start':start_px, 'end':end_px}))

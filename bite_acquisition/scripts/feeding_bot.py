@@ -6,15 +6,38 @@ import math
 import os
 
 import rospy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, JointState
 
 from rs_ros import RealSenseROS
 import pickle
+import yaml
+import threading
+import time
+
+# ROBOT = 'kinova-deployment' # 'kinova' or 'franka' or 'kinova-deployment' (used for controller on the NUC)
+ROBOT = 'kinova'    
+
+from rs_ros import RealSenseROS
+from pixel_selector import PixelSelector
+
+if ROBOT == 'franka':
+    from robot_controller.franka_controller import FrankaRobotController
+elif ROBOT == 'kinova':
+    from robot_controller.kinova_controller import KinovaRobotController
+elif ROBOT == 'kinova-deployment':
+    from feeding_deployment.robot_controller.arm_client import (
+        ARM_RPC_PORT,
+        NUC_HOSTNAME,
+        RPC_AUTHKEY,
+        ArmManager,
+    )
+else:
+    raise ValueError("Invalid robot type")
 
 from skill_library import SkillLibrary
 
 # package imports
-import utils
+import flair_utils
 
 from visualization_msgs.msg import Marker, MarkerArray
 
@@ -33,7 +56,52 @@ class FeedingBot:
         rospy.init_node('FeedingBot')
         
         self.camera = RealSenseROS()
-        self.skill_library = SkillLibrary()
+
+        if ROBOT == 'franka':
+            config_path = "/home/limbrepos/feeding_ws/src/franka_feeding/configs/feeding.yaml"
+            with open(config_path, "r") as f:
+                config = yaml.load(f, Loader=yaml.Loader)
+            robot_controller = FrankaRobotController(config)
+        elif ROBOT == 'kinova':
+            robot_controller = KinovaRobotController()
+        elif ROBOT == 'kinova-deployment':
+            manager = ArmManager(address=(NUC_HOSTNAME, ARM_RPC_PORT), authkey=RPC_AUTHKEY)
+            manager.connect()
+            robot_controller = manager.Arm()
+
+            # Rajat Just for testing
+            above_plate_pos = [4.119619921793763, 5.927367810785151, 4.797271913808785, 4.641709217686205, 4.980350922946283, 5.268199221999715, 4.814377930122582]
+            robot_controller.set_joint_position(above_plate_pos)
+
+            def publish_joint_states(arm):
+
+                # publish joint states
+                joint_states_pub = rospy.Publisher("/robot_joint_states", JointState, queue_size=10)
+
+                while not rospy.is_shutdown():
+                    arm_pos, gripper_pos = arm.get_state()
+                    joint_state_msg = JointState()
+                    joint_state_msg.header.stamp = rospy.Time.now()
+                    joint_state_msg.name = [
+                        "joint_1",
+                        "joint_2",
+                        "joint_3",
+                        "joint_4",
+                        "joint_5",
+                        "joint_6",
+                        "joint_7",
+                        "finger_joint",
+                    ]
+                    joint_state_msg.position = arm_pos.tolist() + [gripper_pos]
+                    joint_state_msg.velocity = [0.0] * 8
+                    joint_state_msg.effort = [0.0] * 8
+                    joint_states_pub.publish(joint_state_msg)
+                    time.sleep(0.01)
+
+            joint_state_thread = threading.Thread(target=publish_joint_states, args=(robot_controller,))
+            joint_state_thread.start()
+
+        self.skill_library = SkillLibrary(robot_controller)
 
         print("Feeding Bot initialized")
 

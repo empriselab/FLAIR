@@ -1,10 +1,10 @@
 import rospy
 from visualization_msgs.msg import Marker, MarkerArray
-import utils
+import flair_utils
 
 class Visualizer:
     def __init__(self):
-        self.tf_utils = utils.TFUtils()
+        self.tf_utils = flair_utils.TFUtils()
 
         self.utensil_visualization_pub = rospy.Publisher('utensil_visualization_marker_array', MarkerArray, queue_size=10)
         self.food_visualization_pub = rospy.Publisher('food_visualization_marker_array', MarkerArray, queue_size=10)

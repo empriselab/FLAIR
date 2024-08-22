@@ -2,7 +2,7 @@ import face_alignment
 from skimage import io
 
 from rs_ros import RealSenseROS
-import utils
+import flair_utils
 import numpy as np
 import cv2
 
@@ -39,7 +39,7 @@ while True:
 
     # visualize the landmarks
     for pred in preds[48:68]:
-        validity, pred_3d = utils.pixel2World(camera_info_data, int(pred[0]), int(pred[1]), camera_depth_data, box_width=5)
+        validity, pred_3d = flair_utils.pixel2World(camera_info_data, int(pred[0]), int(pred[1]), camera_depth_data, box_width=5)
         if validity:
             preds_3d.append(pred_3d)
             cv2.circle(camera_color_data, (int(pred[0]), int(pred[1])), 2, (0, 255, 0), -1)

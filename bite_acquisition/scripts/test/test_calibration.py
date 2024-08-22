@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, "..")
 
-import utils
+import flair_utils
 from rs_ros import RealSenseROS
 import os
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
         header, color_data, info_data, depth_data = camera.get_camera_data()
         
-        camera_to_fork = utils.TFUtils().getTransformationFromTF("camera_color_optical_frame", "fork_tip")
+        camera_to_fork = flair_utils.TFUtils().getTransformationFromTF("camera_color_optical_frame", "fork_tip")
 
         print(camera_to_fork)
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         camera_to_fork[:,3] = curr_translation
 
         print("Camera to fork:",camera_to_fork)
-        fork_x, fork_y = utils.world2Pixel(info_data, camera_to_fork[0,3], camera_to_fork[1,3], camera_to_fork[2,3])
+        fork_x, fork_y = flair_utils.world2Pixel(info_data, camera_to_fork[0,3], camera_to_fork[1,3], camera_to_fork[2,3])
         print("Fork pixel:",fork_x, fork_y)
 
         cv2.circle(color_data, (int(fork_x), int(fork_y)), 10, (0,255,255), -1)
