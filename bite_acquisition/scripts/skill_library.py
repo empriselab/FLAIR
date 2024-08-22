@@ -21,15 +21,18 @@ import cmath
 import yaml
 import argparse
 
+ROBOT = 'kinova' # 'kinova' or 'franka'
+
 from rs_ros import RealSenseROS
 from pixel_selector import PixelSelector
-from robot_controller.franka_controller import FrankaRobotController
-from robot_controller.kinova_controller import KinovaRobotController
+if ROBOT == 'franka':
+    from robot_controller.franka_controller import FrankaRobotController
+else:
+    from robot_controller.kinova_controller import KinovaRobotController
 from wrist_controller import WristController
 from visualizer import Visualizer
 
-ROBOT = 'franka' # 'kinova' or 'franka'
-PLATE_HEIGHT = 0.2 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
+PLATE_HEIGHT = 0.16 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
 
 class SkillLibrary:
     def __init__(self, config):
@@ -62,7 +65,10 @@ class SkillLibrary:
         self.tf_utils.publishTransformationToTF('base_link', 'tool_frame_target', tool_frame_target)
         
         input("Press enter to actually move utensil.")
-        self.robot_controller.move_to_pose(tool_frame_target)
+        if ROBOT == 'franka':
+            self.robot_controller.move_to_pose(tool_frame_target)
+        else:
+            self.robot_controller.move_to_pose(self.tf_utils.get_pose_msg_from_transform(tool_frame_target))
 
     def scooping_skill(self, color_image, depth_image, camera_info, keypoints = None):
 
@@ -360,8 +366,9 @@ class SkillLibrary:
         waypoint_2_tip = np.copy(food_base)
         self.move_utensil_to_pose(waypoint_2_tip)
 
-        self.scooping_pickup()
-        # self.move_utensil_to_pose(waypoint_1_tip)
+        # Rajat ToDo: Switch to scooping pick up
+        # self.scooping_pickup()
+        self.move_utensil_to_pose(waypoint_1_tip)
 
         # move to home position
         self.robot_controller.reset()
@@ -376,145 +383,9 @@ class SkillLibrary:
             return joint_position
         return None
 
-    def vertical_skewering_skill(self, color_image, depth_image, camera_info, keypoint=None, major_axis=None, action_index=0):
-        if keypoint is not None:
-            (center_x, center_y) = keypoint
-            major_axis = np.degrees(major_axis)
-        else:
-            clicks = self.pixel_selector.run(color_image)
-            (center_x, center_y) = clicks[0]
-            major_axis = 0
-        
-        print(f"Center x {center_x}, Center y {center_y}, Action index {action_index}")
-
-        # get 3D point from depth image
-        validity, point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
-
-        if not validity:
-            print("Invalid point")
-            return
-        
-        # Action 1: Adjust the wrist to the desired state
-        if action_index == 0 or action_index == 1:
-            self.wrist_controller.set_wrist_state(0.18 * math.pi,math.pi)
-
-        print("Getting transformation from base_link to camera_color_optical_frame")
-        food_transform = np.eye(4)
-        food_transform[:3,3] = point.reshape(1,3)
-        print('------ Food transform: ', food_transform)
-        food_base = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ food_transform
-        print('------ Food base: ', food_base)
-
-        print("---- Height of skewer point: ", food_base[2,3])
-
-        print("Food detection height: ", food_base[2,3])
-        input("Press enter to continue")
-        food_base[2,3] = max(food_base[2,3] - 0.01, PLATE_HEIGHT) 
-        print("---- Height of skewer point (after max): ", food_base[2,3]) 
-
-        food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,0], degrees=True).as_matrix()
-
-        skewer_axis = -major_axis - 90
-        if action_index%2 == 0: # 0s are along major axis
-            print("-------- Rotating by 90 degrees")
-            skewer_axis = skewer_axis + 90
-        if skewer_axis > 90:
-            skewer_axis = skewer_axis - 180
-
-        food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,skewer_axis], degrees=True).as_matrix()
-
-        print('------ Food base2: ', food_base)
-
-        self.tf_utils.publishTransformationToTF('base_link', 'food_frame', food_base)
-        self.visualizer.visualize_food(food_base)
-        food_base[:3, 3] += [0.026, 0.01, 0]
-        # inital pose of the fork
-        init_base = np.copy(food_base)
-
-
-        print("Getting transformation from base_link to fork tip")
-        base_to_forkbase = self.tf_utils.getTransformationFromTF('base_link', 'forkbase')
-        forkpitch_joint_position = self.joint_state_callback('forkpitch_joint', rospy.wait_for_message('/wrist_joint_states', JointState))
-        forkpitch_joint_matrix = np.eye(4)
-        forkpitch_joint_matrix[:3, :3] = Rotation.from_euler('xyz', [0,-forkpitch_joint_position,0], degrees=False).as_matrix()
-        forkpitch_joint_matrix[:3, 3] = [0.0375, 0.000, 0.000]
-        base_to_forkpitch_matrix = np.dot(base_to_forkbase, forkpitch_joint_matrix)
-        self.tf_utils.publishTransformationToTF('base_link', 'forkpitch', base_to_forkpitch_matrix)
-
-        forkroll_joint_position = self.joint_state_callback('forkroll_joint', rospy.wait_for_message('/wrist_joint_states', JointState))
-        forkroll_joint_matrix = np.eye(4)
-        forkroll_joint_matrix[:3, :3] = Rotation.from_euler('xyz', [forkroll_joint_position,0,0], degrees=False).as_matrix()
-        forkroll_joint_matrix[:3, 3] = [0.045083, 0.000, 0.000]  # x translation as defined in the URDF
-        base_to_forkroll_matrix = np.dot(base_to_forkpitch_matrix, forkroll_joint_matrix)
-        self.tf_utils.publishTransformationToTF('base_link', 'forkroll', base_to_forkroll_matrix)
-
-        # print("Forkpitch matrix: ", forkpitch_matrix)
-        # print("Forkroll matrix: ", forkroll_matrix)
-        
-
-        base_to_tip = self.tf_utils.getTransformationFromTF('base_link', 'fork_tip')
-        food_base[:3,:3] = food_base[:3,:3] @ base_to_tip[:3,:3]
-        init_base[:3,:3] = init_base[:3,:3] @ base_to_tip[:3,:3]
-
-
-
-        # Action 2: Move to action start position
-        waypoint_1_tip = np.copy(init_base)
-        waypoint_1_tip[2,3] += 0.05
-        self.move_utensil_to_pose(waypoint_1_tip)
-
-        # Action 3: Move inside food item
-        waypoint_2_tip = np.copy(food_base)
-        self.move_utensil_to_pose(waypoint_2_tip)
-
-        # Action 4: Move up
-        waypoint_3_tip = np.copy(food_base)
-        waypoint_3_tip[2,3] += 0.05
-        self.move_utensil_to_pose(waypoint_3_tip)
-
-        # Action 5: Angle wrist
-        self.wrist_controller.set_wrist_state(0.4 * math.pi, 0.0)
-
-        # move to home position
-        self.robot_controller.reset()
-
-        # reset wrist
-        self.wrist_controller.reset()
-
     def scooping_pickup(self, hack = True):
 
-        forkpitch_to_tip = self.tf_utils.getTransformationFromTF('forkpitch', 'fork_tip')
-        distance = forkpitch_to_tip[0,3]
-
-        print("Distance: ", distance)
-
-        fork_base = self.tf_utils.getTransformationFromTF('base_link', 'forkbase')
-
-        fork_base_displacement = np.eye(4)
-        fork_base_displacement[0,3] = distance/8
-        fork_base_displacement[2,3] = -distance*3/4
-
-        fork_base_target = fork_base @ fork_base_displacement
-
-        forkbase_to_tool_frame = self.tf_utils.getTransformationFromTF('forkbase', 'tool_frame')
-        tool_frame_target = fork_base_target @ forkbase_to_tool_frame
-
-        self.tf_utils.publishTransformationToTF('base_link', 'tool_frame_target', tool_frame_target)
-        
-        # print("Press enter to continue")
-        # input()
-
-        if hack:
-            scoop_thread = threading.Thread(target=self.wrist_controller.scoop_wrist_hack)
-        else:
-            scoop_thread = threading.Thread(target=self.wrist_controller.scoop_wrist)
-        scoop_thread.start()
-
-        # input("Press enter to also move the robot...")
-        self.robot_controller.move_to_pose(tool_frame_target)
-
-        # wait for scoop thread to finish
-        scoop_thread.join()
+        raise NotImplementedError
 
     def pushing_skill(self, color_image, depth_image, camera_info, keypoints = None):
         
@@ -679,13 +550,16 @@ class SkillLibrary:
 if __name__ == "__main__":
     rospy.init_node('SkillLibrary')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="/home/limbrepos/feeding_ws/src/franka_feeding/configs/feeding.yaml")
-    args = parser.parse_args()
+    if ROBOT == 'franka':
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--config", type=str, default="/home/limbrepos/feeding_ws/src/franka_feeding/configs/feeding.yaml")
+        args = parser.parse_args()
 
-    config_path = args.config
-    with open(config_path, "r") as f:
-        config = yaml.load(f, Loader=yaml.Loader)
+        config_path = args.config
+        with open(config_path, "r") as f:
+            config = yaml.load(f, Loader=yaml.Loader)
+    else:
+        config = None
     
     skill_library = SkillLibrary(config)
     skill_library.reset()

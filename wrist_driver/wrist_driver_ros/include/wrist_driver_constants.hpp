@@ -43,10 +43,10 @@ constexpr double RAWVEL_TO_RAD{ 0.229 * (6.2831853) / 60 };
 
 // position constraints
 constexpr int JT0_MIN_POSITION{ 0 };
-constexpr int JT0_CENTER_POSITION{ 1024 };  // range is +/- 1024
+constexpr int JT0_CENTER_POSITION{ 3072 };  // range is +/- 1024
 constexpr int JT0_MAX_POSITION{ 2048 };
 constexpr int JT1_MIN_POSITION{ -32768 };
-constexpr int JT1_CENTER_POSITION{ 0 };  // range arbitrarily set at 8 rotations (4096 pulse per rotation)
+constexpr int JT1_CENTER_POSITION{ 2048 };  // range arbitrarily set at 8 rotations (4096 pulse per rotation)
 constexpr int JT1_MAX_POSITION{ 32768 };
 
 // wrist length constants (in meters)
