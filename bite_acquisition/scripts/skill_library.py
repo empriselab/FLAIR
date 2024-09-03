@@ -376,8 +376,8 @@ class SkillLibrary:
         self.move_utensil_to_pose(waypoint_2_tip)
 
         # Rajat ToDo: Switch to scooping pick up
-        # self.scooping_pickup()
-        self.move_utensil_to_pose(waypoint_1_tip)
+        self.scooping_pickup()
+        # self.move_utensil_to_pose(waypoint_1_tip)
 
     def joint_state_callback(self, joint_name, msg):
         if joint_name in msg.name:
@@ -388,7 +388,35 @@ class SkillLibrary:
 
     def scooping_pickup(self, hack = True):
 
-        raise NotImplementedError
+        forkpitch_to_tip = self.tf_utils.getTransformationFromTF('forkpitch', 'fork_tip')
+        print("Forkpitch to tip: ", forkpitch_to_tip)
+        distance = forkpitch_to_tip[0,3]
+
+        print("Distance: ", distance)
+
+        tool_frame = self.tf_utils.getTransformationFromTF('base_link', 'tool_frame')
+
+        tool_frame_displacement = np.eye(4)
+        tool_frame_displacement[0,3] = distance/8 # move down
+        tool_frame_displacement[1,3] = -distance*3/4 # move back
+
+        tool_frame_target = tool_frame @ tool_frame_displacement
+
+        self.tf_utils.publishTransformationToTF('base_link', 'tool_frame_target', tool_frame_target)
+        
+        input("Press enter to start scooping pickup")
+
+        scoop_thread = threading.Thread(target=self.wrist_controller.scoop_wrist)
+        scoop_thread.start()
+
+        # input("Press enter to also move the robot...")
+        if ROBOT == 'franka' or ROBOT == 'kinova':
+            raise NotImplementedError
+        elif ROBOT == 'kinova-deployment':
+            self.robot_controller.execute_command(CartesianCommand(tool_frame_target[:3,3].tolist(), Rotation.from_matrix(tool_frame_target[:3,:3]).as_quat()))
+
+        # wait for scoop thread to finish
+        scoop_thread.join()
 
     def pushing_skill(self, color_image, depth_image, camera_info, keypoints = None):
         
@@ -572,6 +600,8 @@ if __name__ == "__main__":
     
     camera = RealSenseROS()
     camera_header, camera_color_data, camera_info_data, camera_depth_data = camera.get_camera_data()
+
+    # skill_library.scooping_pickup()
 
     skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
 
