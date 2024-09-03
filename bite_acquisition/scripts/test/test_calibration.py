@@ -6,7 +6,7 @@ from rs_ros import RealSenseROS
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from robot_controller.franka_controller import FrankaRobotController
+
 from wrist_controller import WristController
 import rospy
 import cv2
@@ -22,23 +22,14 @@ if __name__ == "__main__":
 
     rospy.init_node('test_calibration')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="/home/limbrepos/feeding_ws/src/franka_feeding/configs/feeding.yaml")
-    args = parser.parse_args()
-
-    config_path = args.config
-    with open(config_path, "r") as f:
-        config = yaml.load(f, Loader=yaml.Loader)
-
     camera = RealSenseROS()
     time.sleep(1.0)
 
     print("Init")
 
-    robot_controller = FrankaRobotController(config)
     wrist_controller = WristController()
+    wrist_controller.set_velocity_mode()
 
-    robot_controller.reset()
     wrist_controller.reset()
 
     print("Calibrating...")

@@ -33,12 +33,14 @@ elif ROBOT == 'kinova':
     from robot_controller.kinova_controller import KinovaRobotController
 elif ROBOT == 'kinova-deployment':
     from feeding_deployment.robot_controller.arm_client import ArmInterfaceClient
+    from feeding_deployment.robot_controller.command_interface import JointCommand, CartesianCommand
 else:
     raise ValueError("Invalid robot type")
 
 from wrist_controller import WristController
 from visualizer import Visualizer
 
+# PLATE_HEIGHT = 0.16 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
 PLATE_HEIGHT = 0.16 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
 
 class SkillLibrary:
@@ -56,8 +58,8 @@ class SkillLibrary:
 
     def reset(self):
         if ROBOT == 'kinova-deployment':
-            above_plate_pos = [4.119619921793763, 5.927367810785151, 4.797271913808785, 4.641709217686205, 4.980350922946283, 5.268199221999715, 4.814377930122582]
-            self.robot_controller.set_joint_position(above_plate_pos)
+            above_plate_pos = [-2.86495014, -1.61460533, -2.6115943, -1.37673391, 1.11842806, -1.17904586, -2.6957422]
+            self.robot_controller.execute_command(JointCommand(above_plate_pos))
         else:
             self.robot_controller.reset()
         self.wrist_controller.reset()
@@ -81,7 +83,7 @@ class SkillLibrary:
         elif ROBOT == 'kinova-deployment':
             tool_frame_pos = tool_frame_target[:3,3].reshape(1,3).tolist()[0] # one dimensional list
             tool_frame_quat = Rotation.from_matrix(tool_frame_target[:3,:3]).as_quat()
-            self.robot_controller.set_ee_pose(tool_frame_pos, tool_frame_quat)
+            self.robot_controller.execute_command(CartesianCommand(tool_frame_pos, tool_frame_quat))
 
     def scooping_skill(self, color_image, depth_image, camera_info, keypoints = None):
 
@@ -560,36 +562,8 @@ if __name__ == "__main__":
         robot_controller = ArmInterfaceClient()
 
         # Rajat Just for testing
-        above_plate_pos = [4.119619921793763, 5.927367810785151, 4.797271913808785, 4.641709217686205, 4.980350922946283, 5.268199221999715, 4.814377930122582]
-        robot_controller.set_joint_position(above_plate_pos)
-
-        def publish_joint_states(arm):
-
-            # publish joint states
-            joint_states_pub = rospy.Publisher("/robot_joint_states", JointState, queue_size=10)
-
-            while not rospy.is_shutdown():
-                arm_pos, ee_pose, gripper_pos = arm.get_state()
-                joint_state_msg = JointState()
-                joint_state_msg.header.stamp = rospy.Time.now()
-                joint_state_msg.name = [
-                    "joint_1",
-                    "joint_2",
-                    "joint_3",
-                    "joint_4",
-                    "joint_5",
-                    "joint_6",
-                    "joint_7",
-                    "finger_joint",
-                ]
-                joint_state_msg.position = arm_pos.tolist() + [gripper_pos]
-                joint_state_msg.velocity = [0.0] * 8
-                joint_state_msg.effort = [0.0] * 8
-                joint_states_pub.publish(joint_state_msg)
-                time.sleep(0.01)
-
-        joint_state_thread = threading.Thread(target=publish_joint_states, args=(robot_controller,))
-        joint_state_thread.start()
+        above_plate_pos = [-2.86495014, -1.61460533, -2.6115943, -1.37673391, 1.11842806, -1.17904586, -2.6957422]
+        robot_controller.execute_command(JointCommand(above_plate_pos))
     
     wrist_controller = WristController()
     wrist_controller.set_velocity_mode()
@@ -599,9 +573,9 @@ if __name__ == "__main__":
     camera = RealSenseROS()
     camera_header, camera_color_data, camera_info_data, camera_depth_data = camera.get_camera_data()
 
-    # skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
+    skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
 
-    skill_library.scooping_skill(camera_color_data, camera_depth_data, camera_info_data)
+    # skill_library.scooping_skill(camera_color_data, camera_depth_data, camera_info_data)
 
     # skill_library.dipping_skill(camera_color_data, camera_depth_data, camera_info_data)
 
@@ -612,7 +586,3 @@ if __name__ == "__main__":
     # skill_library.cutting_skill(camera_color_data, camera_depth_data, camera_info_data)
 
     skill_library.reset()
-
-    if ROBOT == 'kinova-deployment':
-        joint_state_thread.join()
-        robot_controller.close()
