@@ -15,7 +15,7 @@ import threading
 import time
 
 # ROBOT = 'kinova-deployment' # 'kinova' or 'franka' or 'kinova-deployment' (used for controller on the NUC)
-ROBOT = 'kinova'    
+ROBOT = 'kinova-deployment'    
 
 from rs_ros import RealSenseROS
 from pixel_selector import PixelSelector
@@ -25,12 +25,7 @@ if ROBOT == 'franka':
 elif ROBOT == 'kinova':
     from robot_controller.kinova_controller import KinovaRobotController
 elif ROBOT == 'kinova-deployment':
-    from feeding_deployment.robot_controller.arm_client import (
-        ARM_RPC_PORT,
-        NUC_HOSTNAME,
-        RPC_AUTHKEY,
-        ArmManager,
-    )
+    from feeding_deployment.robot_controller.arm_client import ArmInterfaceClient
 else:
     raise ValueError("Invalid robot type")
 
@@ -65,9 +60,7 @@ class FeedingBot:
         elif ROBOT == 'kinova':
             robot_controller = KinovaRobotController()
         elif ROBOT == 'kinova-deployment':
-            manager = ArmManager(address=(NUC_HOSTNAME, ARM_RPC_PORT), authkey=RPC_AUTHKEY)
-            manager.connect()
-            robot_controller = manager.Arm()
+            robot_controller = ArmInterfaceClient()
 
             # Rajat Just for testing
             above_plate_pos = [4.119619921793763, 5.927367810785151, 4.797271913808785, 4.641709217686205, 4.980350922946283, 5.268199221999715, 4.814377930122582]
@@ -79,7 +72,7 @@ class FeedingBot:
                 joint_states_pub = rospy.Publisher("/robot_joint_states", JointState, queue_size=10)
 
                 while not rospy.is_shutdown():
-                    arm_pos, gripper_pos = arm.get_state()
+                    arm_pos, ee_pose, gripper_pos = arm.get_state()
                     joint_state_msg = JointState()
                     joint_state_msg.header.stamp = rospy.Time.now()
                     joint_state_msg.name = [

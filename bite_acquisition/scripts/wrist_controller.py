@@ -14,6 +14,7 @@ class WristController:
         self.offset_pitch = offset_pitch
         self.offset_roll = offset_roll
 
+    def set_velocity_mode(self):
         # set wrist control mode to velocity
         rospy.wait_for_service('set_wrist_mode')
         try:

@@ -28,6 +28,10 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdint.h>
+#include <cstdlib>
+#include <iostream>
+#include <chrono>
+#include <csignal>
 
 // #include "rclcpp/rclcpp.hpp"
 // #include "rcutils/cmdline_parser.h"
@@ -53,7 +57,7 @@ WristDriverNode::WristDriverNode(ros::NodeHandle nh) :
         readVelocity_(portHandler, packetHandler, ADDR_CURR_VELOCITY, NUM_BYTES),
         readCurrent_ (portHandler, packetHandler, ADDR_CURR_CURRENT , NUM_BYTES_CURRENT) {
             
-    ROS_INFO("wrist_driver_node started!");
+    // ROS_INFO("wrist_driver_node started!");
 
     // QOS settings
     // this->declare_parameter("qos_depth", 10);
@@ -111,7 +115,13 @@ WristDriverNode::~WristDriverNode() {/*does nothing*/}
         ROS_ERROR("Could not read from joint 0.");
     if (!reader.isAvailable(JT1_ID, addr, num_bytes))
         ROS_ERROR("Could not read from joint 1.");
+    if (!reader.isAvailable(JT0_ID, addr, num_bytes) || !reader.isAvailable(JT1_ID, addr, num_bytes))
+    {
+        ROS_ERROR("Could not read from both joints -- shutting down node.");
+        ros::shutdown();
+    }
     };
+
     setupRead(readPosition_, ADDR_CURR_POSITION, NUM_BYTES);
     setupRead(readVelocity_, ADDR_CURR_VELOCITY, NUM_BYTES);
     setupRead(readCurrent_ , ADDR_CURR_CURRENT, NUM_BYTES_CURRENT);
@@ -164,7 +174,7 @@ void WristDriverNode::cb_jointAngleCmd(const SimpleJointAngleCommandMsg &msg) {
     double q0 = msg.q0; // msg->q_desired[0];
     double q1 = msg.q1; // msg->q_desired[1];
     
-    ROS_INFO("Writing joint 0 to %.2f rad(/s) and joint 1 to %0.2f rad(/s).", q0, q1);
+    // ROS_INFO("Writing joint 0 to %.2f rad(/s) and joint 1 to %0.2f rad(/s).", q0, q1);
     
     writeJt0(q0);
     writeJt1(q1);
@@ -306,7 +316,7 @@ bool WristDriverNode::writeJt1(double q) {
 /* Begin non-class functions (TODO: Move to other file) */
 
 // Use control_mode to change between position, extended position, current, etc.
-void setupDynamixel(uint8_t dxl_id, uint8_t control_mode = 3)
+bool setupDynamixel(uint8_t dxl_id, uint8_t control_mode = 3)
 {
     uint8_t dxl_error = 0;
     int dxl_comm_result = COMM_TX_FAIL;
@@ -322,9 +332,11 @@ void setupDynamixel(uint8_t dxl_id, uint8_t control_mode = 3)
 
     if (dxl_comm_result != COMM_SUCCESS) {
         ROS_ERROR("Failed to set mode.");
-    } else {
-        ROS_INFO("Succeeded to set mode.");
-    }
+        return false;
+    } 
+    // else {
+        // ROS_INFO("Succeeded to set mode.");
+    // }
 
     // Enable Torque of DYNAMIXEL
     dxl_comm_result = packetHandler->write1ByteTxRx(
@@ -337,9 +349,13 @@ void setupDynamixel(uint8_t dxl_id, uint8_t control_mode = 3)
 
     if (dxl_comm_result != COMM_SUCCESS) {
         ROS_ERROR("Failed to enable torque.");
-    } else {
-        ROS_INFO("Succeeded to enable torque.");
-    }
+        return false;
+    } 
+    // else {
+        // ROS_INFO("Succeeded to enable torque.");
+    // }
+
+    return true;
 }
 
 
@@ -465,82 +481,113 @@ bool WristDriverNode::cb_setWristMode(SetWristModeRequest &request, SetWristMode
     return true;    
 }
 
+// Global variable to keep track of the running state
+volatile sig_atomic_t keep_running = 1;
 
-int main(int argc, char * argv[]) {
-    int threadPriority{ 97 };
-    char* portName;
-    bool portOverriden{false};
-    // thread handling
-    if (argc >= 2) {
-        // expect the first argument to be the port
-        portName = argv[1];
-        portOverriden = true;
-        if (argc >= 3) {
-            // expect the first argument to be the priority
-            threadPriority = atoi(argv[2]);
+// Signal handler function
+void handle_sigquit(int signum) {
+    keep_running = 0;
+    std::cout << "Ctrl+\ detected! Gracefully exiting..." << std::endl;
+    ros::shutdown();
+}
+
+int main(int argc, char* argv[]) {
+
+    // Register signal handler
+    signal(SIGQUIT, handle_sigquit); // Handle Ctrl+\ for graceful shutdown
+
+    while (keep_running)  // Use keep_running to control the loop
+    {
+        // std::cout<< "Keep running state: " << keep_running << std::endl;
+        // sleep for 1 second
+        sleep(1);
+
+        int threadPriority{ 97 };
+        char* portName;
+        bool portOverriden{false};
+        // thread handling
+        if (argc >= 2) {
+            // expect the first argument to be the port
+            portName = argv[1];
+            portOverriden = true;
+            if (argc >= 3) {
+                // expect the first argument to be the priority
+                threadPriority = atoi(argv[2]);
+            }
         }
+
+        // pid_t pid = getpid();
+        // struct sched_param param;
+        // memset(&param, 0, sizeof(param));
+        // param.sched_priority = threadPriority;
+        // if(sched_setscheduler(pid, SCHED_FIFO, &param)) {
+        //     throw std::runtime_error("Couldn't set scheduling priority and policy");
+        // }
+        // std::cout << "Thread priority set to " << threadPriority << std::endl;
+
+        if (portOverriden)
+            portHandler = dynamixel::PortHandler::getPortHandler(portName);
+        else
+            portHandler = dynamixel::PortHandler::getPortHandler(PORT_NAME);
+        packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+
+        uint8_t dxl_error = 0;
+        int dxl_comm_result = COMM_TX_FAIL;
+
+        // Open Serial Port
+        dxl_comm_result = portHandler->openPort();
+        if (dxl_comm_result == false) {
+            ROS_ERROR("Failed to open the port! Do I have the right permissions?");
+            return -1;
+        } 
+        // else {
+        //     ROS_INFO("Succeeded to open the port.");
+        // }
+
+        // Set the baudrate of the serial port (use DYNAMIXEL Baudrate)
+        dxl_comm_result = portHandler->setBaudRate(BAUDRATE);
+        if (dxl_comm_result == false) {
+            ROS_ERROR("Failed to set the baudrate!");
+            return -1;
+        } 
+        // else {
+        //     ROS_INFO("Succeeded to set the baudrate.");
+        // }
+
+        bool connected_0 = setupDynamixel(JT0_ID);
+        bool connected_1 = setupDynamixel(JT1_ID, 4);
+
+        if (!connected_0 || !connected_1) {
+            // ROS_ERROR("Failed to connect to dynamixels.");
+            continue;
+        }
+
+        ROS_INFO("Wrist Driver starting");
+        ros::init(argc, argv, "wrist_driver_ros");
+        ros::NodeHandle nh;
+
+        std::cout << "Connected to dynamixels - starting wrist driver node." << std::endl;
+        WristDriverNode wrist_driver(nh);
+        ros::spin();
+
+        std::cout << "Shutting down connection to dynamixels." << std::endl;
+
+        // rclcpp::init(argc, argv);
+
+        // auto readwritenode = std::make_shared<WristDriverNode>();
+        // rclcpp::spin(readwritenode);
+        // rclcpp::shutdown();
+
+        // Disable Torque of DYNAMIXELs
+        packetHandler->write1ByteTxRx(
+            portHandler,
+            BROADCAST_ID,
+            ADDR_TORQUE_ENABLE,
+            0,
+            &dxl_error
+        );
+
     }
 
-    // pid_t pid = getpid();
-    // struct sched_param param;
-    // memset(&param, 0, sizeof(param));
-    // param.sched_priority = threadPriority;
-    // if(sched_setscheduler(pid, SCHED_FIFO, &param)) {
-    //     throw std::runtime_error("Couldn't set scheduling priority and policy");
-    // }
-    // std::cout << "Thread priority set to " << threadPriority << std::endl;
-
-    if (portOverriden)
-        portHandler = dynamixel::PortHandler::getPortHandler(portName);
-    else
-        portHandler = dynamixel::PortHandler::getPortHandler(PORT_NAME);
-    packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
-
-    uint8_t dxl_error = 0;
-    int dxl_comm_result = COMM_TX_FAIL;
-
-    // Open Serial Port
-    dxl_comm_result = portHandler->openPort();
-    if (dxl_comm_result == false) {
-        ROS_ERROR("Failed to open the port! Do I have the right permissions?");
-        return -1;
-    } else {
-        ROS_INFO("Succeeded to open the port.");
-    }
-
-    // Set the baudrate of the serial port (use DYNAMIXEL Baudrate)
-    dxl_comm_result = portHandler->setBaudRate(BAUDRATE);
-    if (dxl_comm_result == false) {
-        ROS_ERROR("Failed to set the baudrate!");
-        return -1;
-    } else {
-        ROS_INFO("Succeeded to set the baudrate.");
-    }
-
-    setupDynamixel(JT0_ID);
-    setupDynamixel(JT1_ID, 4);
-
-    ROS_INFO_STREAM("Wrist Driver starting");
-    ros::init(argc, argv, "wrist_driver_ros");
-    ros::NodeHandle nh;
-
-    WristDriverNode wrist_driver(nh);
-    ros::spin();
-
-    // rclcpp::init(argc, argv);
-
-    // auto readwritenode = std::make_shared<WristDriverNode>();
-    // rclcpp::spin(readwritenode);
-    // rclcpp::shutdown();
-
-    // Disable Torque of DYNAMIXELs
-    packetHandler->write1ByteTxRx(
-        portHandler,
-        BROADCAST_ID,
-        ADDR_TORQUE_ENABLE,
-        0,
-        &dxl_error
-    );
-
-    return 0;
+    std::cout << "Shut down wrist driver." << std::endl;
 }

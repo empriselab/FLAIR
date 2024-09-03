@@ -21,8 +21,8 @@ import cmath
 import yaml
 import argparse
 
-# ROBOT = 'kinova-deployment' # 'kinova' or 'franka' or 'kinova-deployment' (used for controller on the NUC)
-ROBOT = 'kinova'    
+ROBOT = 'kinova-deployment' # 'kinova' or 'franka' or 'kinova-deployment' (used for controller on the NUC)
+# ROBOT = 'kinova'    
 
 from rs_ros import RealSenseROS
 from pixel_selector import PixelSelector
@@ -32,12 +32,7 @@ if ROBOT == 'franka':
 elif ROBOT == 'kinova':
     from robot_controller.kinova_controller import KinovaRobotController
 elif ROBOT == 'kinova-deployment':
-    from feeding_deployment.robot_controller.arm_client import (
-        ARM_RPC_PORT,
-        NUC_HOSTNAME,
-        RPC_AUTHKEY,
-        ArmManager,
-    )
+    from feeding_deployment.robot_controller.arm_client import ArmInterfaceClient
 else:
     raise ValueError("Invalid robot type")
 
@@ -47,9 +42,9 @@ from visualizer import Visualizer
 PLATE_HEIGHT = 0.16 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
 
 class SkillLibrary:
-    def __init__(self, robot_controller):
+    def __init__(self, robot_controller, wrist_controller):
         self.robot_controller = robot_controller
-        self.wrist_controller = WristController()
+        self.wrist_controller = wrist_controller
 
         self.pixel_selector = PixelSelector()
         self.tf_utils = flair_utils.TFUtils()
@@ -562,9 +557,7 @@ if __name__ == "__main__":
     elif ROBOT == 'kinova':
         robot_controller = KinovaRobotController()
     elif ROBOT == 'kinova-deployment':
-        manager = ArmManager(address=(NUC_HOSTNAME, ARM_RPC_PORT), authkey=RPC_AUTHKEY)
-        manager.connect()
-        robot_controller = manager.Arm()
+        robot_controller = ArmInterfaceClient()
 
         # Rajat Just for testing
         above_plate_pos = [4.119619921793763, 5.927367810785151, 4.797271913808785, 4.641709217686205, 4.980350922946283, 5.268199221999715, 4.814377930122582]
@@ -576,7 +569,7 @@ if __name__ == "__main__":
             joint_states_pub = rospy.Publisher("/robot_joint_states", JointState, queue_size=10)
 
             while not rospy.is_shutdown():
-                arm_pos, gripper_pos = arm.get_state()
+                arm_pos, ee_pose, gripper_pos = arm.get_state()
                 joint_state_msg = JointState()
                 joint_state_msg.header.stamp = rospy.Time.now()
                 joint_state_msg.name = [
@@ -598,7 +591,9 @@ if __name__ == "__main__":
         joint_state_thread = threading.Thread(target=publish_joint_states, args=(robot_controller,))
         joint_state_thread.start()
     
-    skill_library = SkillLibrary(robot_controller)
+    wrist_controller = WristController()
+    wrist_controller.set_velocity_mode()
+    skill_library = SkillLibrary(robot_controller, wrist_controller)
     skill_library.reset()
     
     camera = RealSenseROS()
