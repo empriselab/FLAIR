@@ -1,1 +1,1 @@
-['oatmeal']
+['sausage', 'banana slice', 'banana slice']

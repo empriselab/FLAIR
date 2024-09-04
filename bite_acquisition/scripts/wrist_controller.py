@@ -47,9 +47,9 @@ class WristController:
 
         pitch_achieved = np.abs(wrist_joint_states.position[0] - desired_pitch) < 0.02
         roll_achieved = np.abs(wrist_joint_states.position[1] - desired_roll) < 0.02
-        while (not pitch_achieved):
+        # while (not pitch_achieved):
 
-        # while (not pitch_achieved) or (not roll_achieved):
+        while (not pitch_achieved) or (not roll_achieved):
             wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
             current_pitch = wrist_joint_states.position[0]
             current_roll = wrist_joint_states.position[1]
@@ -226,14 +226,15 @@ class WristController:
 if __name__ == '__main__':
     rospy.init_node('wrist_controller', anonymous=True)
     wrist_controller = WristController(offset_pitch=0.0, offset_roll=0.0)
+    wrist_controller.set_velocity_mode()
     wrist_controller.reset()
-    wrist_controller.set_to_scoop_pos()
+    # wrist_controller.set_to_scoop_pos()
     # wrist_controller.reset()
     # wrist_controller.set_to_cut_pos()
     # wrist_controller.reset()
     # wrist_controller.twirl_wrist(vel=8)
 
-    # wrist_controller.set_wrist_state(0.4 * math.pi, 0.4 * math.pi)
+    wrist_controller.set_wrist_state(0.0, -0.78)
     
     # wrist_controller.set_to_cut_pos()
     # wrist_controller.twirl_wrist(vel=8)

@@ -26,6 +26,8 @@ ROBOT = 'kinova-deployment' # 'kinova' or 'franka' or 'kinova-deployment' (used 
 
 from rs_ros import RealSenseROS
 from pixel_selector import PixelSelector
+from inference_class import BiteAcquisitionInference
+from vision_utils import visualize_skewer
 
 if ROBOT == 'franka':
     from robot_controller.franka_controller import FrankaRobotController
@@ -323,7 +325,6 @@ class SkillLibrary:
     def skewering_skill(self, color_image, depth_image, camera_info, keypoint=None, major_axis=None, action_index=0):
         if keypoint is not None:
             (center_x, center_y) = keypoint
-            major_axis = np.degrees(major_axis)
         else:
             clicks = self.pixel_selector.run(color_image)
             (center_x, center_y) = clicks[0]
@@ -351,29 +352,29 @@ class SkillLibrary:
 
         food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,0], degrees=True).as_matrix()
 
-        skewer_axis = -major_axis - 90
-        if action_index%2 == 0: # 0s are along major axis
-            print("-------- Rotating by 90 degrees")
-            skewer_axis = skewer_axis + 90
-        if skewer_axis > 90:
-            skewer_axis = skewer_axis - 180
-
-        food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,skewer_axis], degrees=True).as_matrix()
-
         self.tf_utils.publishTransformationToTF('base_link', 'food_frame', food_base)
         self.visualizer.visualize_food(food_base)
 
         base_to_tip = self.tf_utils.getTransformationFromTF('base_link', 'fork_tip')
         food_base[:3,:3] = food_base[:3,:3] @ base_to_tip[:3,:3]
 
+        if major_axis < np.pi/2:
+            major_axis = major_axis + np.pi/2
+
+        # caching this so that the robot doesn't rotate the wrist again
+        tip_to_wrist = self.tf_utils.getTransformationFromTF('fork_tip', 'tool_frame')
+        
+        # Action 0: Rotate twirl DoF to skewer angle
+        self.wrist_controller.set_wrist_state(0, -major_axis)
+
         # Action 1: Move to action start position
         waypoint_1_tip = np.copy(food_base)
         waypoint_1_tip[2,3] += 0.05
-        self.move_utensil_to_pose(waypoint_1_tip)
+        self.move_utensil_to_pose(waypoint_1_tip, tip_to_wrist)
 
         # Action 2: Move inside food item
         waypoint_2_tip = np.copy(food_base)
-        self.move_utensil_to_pose(waypoint_2_tip)
+        self.move_utensil_to_pose(waypoint_2_tip, tip_to_wrist)
 
         # Rajat ToDo: Switch to scooping pick up
         self.scooping_pickup()
@@ -601,9 +602,26 @@ if __name__ == "__main__":
     camera = RealSenseROS()
     camera_header, camera_color_data, camera_info_data, camera_depth_data = camera.get_camera_data()
 
+    inference_server = BiteAcquisitionInference(mode='ours')
+    inference_server.FOOD_CLASSES = ["yellow banana cube"]
+    annotated_image, detections, item_masks, item_portions, item_labels = inference_server.detect_items(camera_color_data)
+    print("Item masks: ", len(item_masks))
+    print("Item labels: ", item_labels)
+
+    skewer_mask = item_masks[0]
+    skewer_point, skewer_angle = inference_server.get_skewer_action(skewer_mask)
+    vis = visualize_skewer(camera_color_data, skewer_point, skewer_angle)
+    cv2.imshow('vis', vis)
+    cv2.waitKey(0)
+
+    k = input("Press 'y' to execute skewering skill: ")
+    if k == 'y':
+        skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data, skewer_point, skewer_angle)
+        skill_library.reset()
+
     # skill_library.scooping_pickup()
 
-    skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
+    # skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
 
     # skill_library.scooping_skill(camera_color_data, camera_depth_data, camera_info_data)
 
@@ -614,5 +632,3 @@ if __name__ == "__main__":
     # skill_library.twirling_skill(camera_color_data, camera_depth_data, camera_info_data)
 
     # skill_library.cutting_skill(camera_color_data, camera_depth_data, camera_info_data)
-
-    skill_library.reset()
