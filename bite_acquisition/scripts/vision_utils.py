@@ -95,7 +95,6 @@ def detect_plate(img, multiplier = 1.7):
             a, b, r = pt[0], pt[1], pt[2]
             plate_small_mask = plate_mask.copy()
             cv2.circle(plate_small_mask, (a*2, b*2), int(r*multiplier), (255,255,255), -1)
-            plate_mask_vis = np.repeat(plate_mask[:,:,np.newaxis], 3, axis=2)
             break
         return plate_small_mask
 

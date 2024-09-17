@@ -572,9 +572,58 @@ class SkillLibrary:
         self.tf_utils.publishTransformationToTF('base_link', 'transfer_target', transfer_target)
 
         self.move_utensil_to_pose(transfer_target)
+
+import json
+from typing import Any
+
+import rospy
+from sensor_msgs.msg import JointState, CompressedImage
+from std_msgs.msg import String
+from visualization_msgs.msg import MarkerArray
+import tf2_ros
+from geometry_msgs.msg import TransformStamped
+from cv_bridge import CvBridge
+
+class WebInterface:
+    def __init__(self):
+        self.web_interface_publisher = rospy.Publisher("/ServerComm", String, queue_size=10)
+        self.web_interface_image_publisher = rospy.Publisher("/camera/image/compressed", CompressedImage, queue_size=10)
+        self.image_bridge = CvBridge()
+        self.last_captured_ros_image = None
+        self.update_web_interface_image(np.zeros((512, 512, 3)))
+        thread = threading.Thread(target=self._publish_web_interface_image)
+        thread.start()
+
+        self.user_preference = None
+        self.web_interface_sub = rospy.Subscriber(
+            "WebAppComm", String, self._web_interface_callback
+        )
+
+    def update_web_interface_image(self, image):
+        self.last_captured_ros_image = self.image_bridge.cv2_to_compressed_imgmsg(image)
+
+    def _publish_web_interface_image(self):
+        rate = rospy.Rate(1)  # 1Hz
+        while not rospy.is_shutdown():
+            self.web_interface_image_publisher.publish(self.last_captured_ros_image)
+            rate.sleep()
+
+    def _web_interface_callback(self, msg: "String") -> None:
+        """Callback for the web interface."""
+        msg_dict = json.loads(msg.data)
+        if msg_dict["state"] == "order_selection" and msg_dict["status"] != "ready_for_initial_data":
+            self.user_preference = msg_dict["status"]
+
+    def _send_web_interface_message(self, msg_dict: dict[str, Any]) -> None:
+        print("Sending message to web interface: ", msg_dict)
+        self.web_interface_publisher.publish(
+            String(json.dumps(msg_dict))
+        )
     
 if __name__ == "__main__":
     rospy.init_node('SkillLibrary')
+
+    web_interface = WebInterface()
 
     if ROBOT == 'franka':
         parser = argparse.ArgumentParser()
@@ -603,10 +652,69 @@ if __name__ == "__main__":
     camera_header, camera_color_data, camera_info_data, camera_depth_data = camera.get_camera_data()
 
     inference_server = BiteAcquisitionInference(mode='ours')
-    inference_server.FOOD_CLASSES = ["yellow banana cube"]
-    annotated_image, detections, item_masks, item_portions, item_labels = inference_server.detect_items(camera_color_data)
+    inference_server.FOOD_CLASSES = ["yellow banana slice", "orange baby carrot"]
+    annotated_image, detections, item_masks, item_portions, item_labels, plate_bounds = inference_server.detect_items(camera_color_data)
+    
+    plate_image = camera_color_data.copy()[plate_bounds[1]:plate_bounds[1]+plate_bounds[3], plate_bounds[0]:plate_bounds[0]+plate_bounds[2]]
+    web_interface._send_web_interface_message({"state": "prepare_bite", "status": "completed"})
+    web_interface.update_web_interface_image(plate_image)
+    time.sleep(1) # necessary or later messages will be ignored
+
+    clean_item_labels, _ = inference_server.clean_labels(item_labels)
+
+    # remove detections of blue plate
+    if 'blue plate' in clean_item_labels:
+        idx = clean_item_labels.index('blue plate')
+        clean_item_labels.pop(idx)
+        item_labels.pop(idx)
+        item_masks.pop(idx)
+        item_portions.pop(idx)
+
+    items_detection = {
+        'annotated_image': annotated_image,
+        'clean_item_labels': clean_item_labels,
+        'item_labels': item_labels,
+        'item_masks': item_masks,
+        'item_portions': item_portions,
+        'detections': detections
+    }
+
+    food_types = sorted(set(items_detection['clean_item_labels']))
+
+    # Send detections back to interface.
+    n_food_types = len(food_types)
+    food_type_to_data = {food_type: [] for food_type in food_types}
+    for label, bb in zip(items_detection['clean_item_labels'],
+                            items_detection['detections'].xyxy,
+                                strict=True):
+        x0, y0, x1, y1 = bb
+        w = x1 - x0
+        h = y1 - y0
+        x_diff, y_diff, _, _ = plate_bounds
+        item_data = [int(x0-x_diff), int(y0-y_diff), int(w), int(h)]
+        food_type_to_data[label].append(item_data)
+    data = [{k: v} for k, v in food_type_to_data.items()]
+    web_interface._send_web_interface_message({"n_food_types": n_food_types, "data": data})
+
+    # TODO: generalize this...
+    ordering_options = [f"Eat all the {food_type}s first" for food_type in food_types]
+    ordering_options += ["No preference"]
+    web_interface._send_web_interface_message({"n_ordering": len(ordering_options), "data": ordering_options})
+
+    # Wait for web interface to report order selection.
+    print("WAITING TO GET PREFERENCE")
+    while web_interface.user_preference is None:
+        time.sleep(1e-1)
+    print("FINISHED GETTING PREFERENCES")
+
+    print("Obtained user preference: ", web_interface.user_preference)
+
     print("Item masks: ", len(item_masks))
     print("Item labels: ", item_labels)
+
+    cv2.imshow('vis', annotated_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     skewer_mask = item_masks[0]
     skewer_point, skewer_angle = inference_server.get_skewer_action(skewer_mask)

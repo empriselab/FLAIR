@@ -657,15 +657,17 @@ class BiteAcquisitionInference:
         return True
 
     def detect_items(self, image, log_path = None):
-        print("Food Classes: ", self.FOOD_CLASSES)
+        
+        plate_mask = detect_plate(image, multiplier=2.0)
+        plate_mask_vis = np.repeat(plate_mask[:,:,np.newaxis], 3, axis=2)
 
-        self.FOOD_CLASSES = [f.replace('fettuccine', 'noodles') for f in self.FOOD_CLASSES]
-        self.FOOD_CLASSES = [f.replace('spaghetti', 'noodles') for f in self.FOOD_CLASSES]
-        # self.FOOD_CLASSES.append('blue plate')
-        # self.FOOD_CLASSES = [f.replace('banana', 'banana piece') for f in self.FOOD_CLASSES]
-        # self.FOOD_CLASSES.append('banana piece')
+        # get bounding box of the plate
+        non_zero_points = cv2.findNonZero(plate_mask)
+        x, y, w, h = cv2.boundingRect(non_zero_points)
+        plate_bounds = [x, y, w, h]
 
-        cropped_image = image.copy()
+        cropped_image = image.copy()[y:y+h, x:x+w]
+        # print("Cropped Image Shape: ", cropped_image.shape)
 
         # cropped_image = image.copy()[0:440, 550:990]
 
@@ -674,7 +676,18 @@ class BiteAcquisitionInference:
 
         # k = input("Visualizing cropped image, is it correct?")
         # if k == 'n':
+        #     cv2.destroyAllWindows()
         #     exit(1)
+
+        # self.FOOD_CLASSES = [f.replace('fettuccine', 'noodles') for f in self.FOOD_CLASSES]
+        # self.FOOD_CLASSES = [f.replace('spaghetti', 'noodles') for f in self.FOOD_CLASSES]
+        # self.FOOD_CLASSES.append('blue plate')
+        self.FOOD_CLASSES = [f.replace('banana', 'yellow banana piece') for f in self.FOOD_CLASSES]
+        self.FOOD_CLASSES = [f.replace('baby carrot', 'orange baby carrot piece') for f in self.FOOD_CLASSES]
+        self.FOOD_CLASSES = [f.replace('cantaloupe', 'orange cantaloupe piece') for f in self.FOOD_CLASSES]
+        # self.FOOD_CLASSES.append('banana piece')
+
+        print("Food Classes being detected: ", self.FOOD_CLASSES)
 
         # detect objects
         detections = self.grounding_dino_model.predict_with_classes(
@@ -713,7 +726,12 @@ class BiteAcquisitionInference:
         
         detections.xyxy = detections.xyxy[nms_idx]
 
-        # # recover detections in original image
+        # recover detections in original image
+        detections.xyxy[:,0] += plate_bounds[0]
+        detections.xyxy[:,1] += plate_bounds[1]
+        detections.xyxy[:,2] += plate_bounds[0]
+        detections.xyxy[:,3] += plate_bounds[1]
+
         # detections.xyxy[:,0] += 550
         # detections.xyxy[:,1] += 0
         # detections.xyxy[:,2] += 550
@@ -813,7 +831,7 @@ class BiteAcquisitionInference:
         labels = refined_labels
 
         # Detect the plate, detect blue color
-        plate_mask = detect_plate(image)
+        # plate_mask = detect_plate(image)
         # individual_masks.append(plate_mask)
         # labels.append('blue plate')
         # individual_masks.append(blue_mask)
@@ -917,11 +935,13 @@ class BiteAcquisitionInference:
 
         print('Labels before replacement: ', labels)
         # bring back labels for banana slices back to banana
-        # labels = [l.replace('sliced banana', 'banana') for l in labels]
+        labels = [l.replace('yellow banana piece', 'banana') for l in labels]
+        labels = [l.replace('orange baby carrot piece', 'baby carrot') for l in labels]
+        labels = [l.replace('orange cantaloupe piece', 'cantaloupe') for l in labels]
         # labels = [l.replace('banana piece', 'banana') for l in labels]    
         print('Labels after replacement: ', labels)
 
-        return annotated_image, detections, refined_masks, portion_weights, labels
+        return annotated_image, detections, refined_masks, portion_weights, labels, plate_bounds
 
     def clean_labels(self, labels):
         clean_labels = []
@@ -944,7 +964,7 @@ class BiteAcquisitionInference:
                     categories.append('noodles')
                 elif 'mashed' in label or 'oatmeal' in label:
                     categories.append('semisolid')
-                elif 'banana' in label or 'strawberry' in label or 'watermelon' in label or 'celery' in label or 'baby carrot' in label:
+                elif 'banana' in label or 'strawberry' in label or 'watermelon' in label or 'celery' in label or 'baby carrot' in label or 'cantaloupe' in label:
                     categories.append('fruit')
                 elif 'broccoli' in label:
                     categories.append('vegetable')
@@ -1101,6 +1121,7 @@ class BiteAcquisitionInference:
 
     def detect_most_obstructing_filling(self, filling_masks, noodle_or_semisolid_mask):
         if noodle_or_semisolid_mask is None:
+            
             # return mask with smallest area (the one which def doesn't require cutting)
             min_area = 1000000
             min_area_idx = 0
@@ -1109,18 +1130,23 @@ class BiteAcquisitionInference:
                 if area < min_area:
                     min_area = area
                     min_area_idx = i
-            return filling_masks[min_area_idx].astype(np.uint8)
+            return filling_masks[min_area_idx].astype(np.uint8), min_area_idx
+        
         filled_noodle_or_semisolid_mask = fill_enclosing_polygon(noodle_or_semisolid_mask)
         #cv2.imshow('img', filled_noodle_or_semisolid_mask)
         #cv2.waitKey(0)
         max_occlusion = 0
         max_occluding_mask = filling_masks[0]
-        for mask in filling_masks:
+        max_occluding_mask_idx = 0
+
+        for i in range(len(filling_masks)):
+            mask = filling_masks[i]
             occlusion_amount = np.count_nonzero(cv2.bitwise_and(mask, filled_noodle_or_semisolid_mask))
             if occlusion_amount > max_occlusion:
                 max_occlusion = occlusion_amount
                 max_occluding_mask = mask
-        return max_occluding_mask.astype(np.uint8)
+                max_occluding_mask_idx = i
+        return max_occluding_mask.astype(np.uint8), max_occluding_mask_idx
 
     def get_autonomous_action(self, annotated_image, image, masks, categories, labels, portions, preference, history, continue_food_label = None, continue_dip_label = None, log_path = None):
         vis = image.copy()
@@ -1138,6 +1164,7 @@ class BiteAcquisitionInference:
         next_actions = []
         dip_actions = []
         efficiency_scores = []        
+        bite_mask_idx = None
 
         print(categories, food_to_consider)
         for idx in food_to_consider:
@@ -1179,8 +1206,9 @@ class BiteAcquisitionInference:
                 if self.mode == 'preference':
                     id_to_skewer = random.choice(range(len(masks[idx])))
                     skewer_mask = masks[idx][id_to_skewer]
+                    bite_mask_idx = id_to_skewer
                 else:
-                    skewer_mask = self.detect_most_obstructing_filling(masks[idx], noodle_or_semisolid_mask)
+                    skewer_mask, bite_mask_idx = self.detect_most_obstructing_filling(masks[idx], noodle_or_semisolid_mask)
                 efficiency_scores.append(0.9)
                 #skewer_point, skewer_angle = self.get_skewer_action(masks[idx][0])
                 skewer_point, skewer_angle = self.get_skewer_action(skewer_mask)
@@ -1201,7 +1229,7 @@ class BiteAcquisitionInference:
         print('Candidate actions: ', next_actions)
 
         if self.mode == 'efficiency':
-            return next_actions[np.argmin(efficiency_scores)], None
+            return next_actions[np.argmin(efficiency_scores)], None, bite_mask_idx
         
         # round efficiency scores to nearest integer
         efficiency_scores = [round(score) for score in efficiency_scores]
@@ -1233,9 +1261,9 @@ class BiteAcquisitionInference:
             print('Bite portions: ', non_dip_portions_rounded)
             print('Preference: ', preference)
 
-            k = input("Press [n] to exit or otherwise I will query bite sequencing planner...")
-            if k == 'n':
-                return None, None
+            # k = input("Press [n] to exit or otherwise I will query bite sequencing planner...")
+            # if k == 'n':
+                # return None, None, None
 
             next_bite, response = self.preference_planner.plan(non_dip_labels, non_dip_portions_rounded, efficiency_scores, preference, dip_labels, history, mode=self.mode)
         
@@ -1246,10 +1274,10 @@ class BiteAcquisitionInference:
         if len(next_bite) == 1 and next_bite[0] in labels:
             print(non_dip_labels, next_bite[0])
             idx = non_dip_labels.index(next_bite[0])
-            return next_actions[idx], None
+            return next_actions[idx], None, bite_mask_idx
         elif len(next_bite) == 2:
             acquire_idx = non_dip_labels.index(next_bite[0])
             dip_idx = dip_labels.index(next_bite[1])
-            return next_actions[acquire_idx], dip_actions[dip_idx]
+            return next_actions[acquire_idx], dip_actions[dip_idx], bite_mask_idx
         else: 
-            return None, None
+            return None, None, None

@@ -39,8 +39,11 @@ class PreferencePlanner:
 
     def plan(self, items, portions, efficiencies, preference, dips, history, mode='ours'):
         if mode == 'ours':
-            print("Reading prompts from prompts/ours_new.txt")
-            with open('prompts/ours.txt', 'r') as f:
+            # get current path
+            file_path = os.path.dirname(os.path.realpath(__file__))
+            prompt_file = os.path.join(file_path, 'prompts/ours.txt')
+            print("Reading prompt from:", prompt_file)
+            with open(prompt_file, 'r') as f:
                 prompt = f.read()
         elif mode == 'preference':
             with open('prompts/preference_only.txt', 'r') as f:

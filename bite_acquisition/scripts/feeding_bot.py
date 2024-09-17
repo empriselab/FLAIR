@@ -156,8 +156,9 @@ class FeedingBot:
 
             cv2.imshow('vis', annotated_image)
             cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
-            input("Visualzing the detected items. Press Enter to continue.")
+            # input("Visualzing the detected items. Press Enter to continue.")
 
             k = input('Are detected items correct?')
             while k not in ['y', 'n']:

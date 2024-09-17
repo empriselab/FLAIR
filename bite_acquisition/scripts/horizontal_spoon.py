@@ -43,6 +43,8 @@ class HorizontalSpoon:
         self.tf_utils = flair_utils.TFUtils()
         self.wrist_state_pub = rospy.Publisher('/cmd_wrist_joint_angles', SimpleJointAngleCommand, queue_size=10)
 
+        self.last_pitch_angle = 0.0
+
         # subscribe to robot cartesian state
         self.cartesian_state_sub = rospy.Subscriber('/robot_cartesian_state', Pose, self.cartesian_state_callback)
 
@@ -57,9 +59,6 @@ class HorizontalSpoon:
                 print("Failed to set wrist mode to velocity")
         except rospy.ServiceException as e:
             print("Service call failed: %s"%e)
-
-
-        time.sleep(2.)
 
     def set_wrist_state(self, pitch, roll, vel=4):
 
@@ -100,19 +99,19 @@ class HorizontalSpoon:
 
             self.wrist_state_pub.publish(wrist_state)
 
-            print("q0: ", wrist_state.q0)
-            print("q1: ", wrist_state.q1)
+            # print("q0: ", wrist_state.q0)
+            # print("q1: ", wrist_state.q1)
 
         wrist_state = SimpleJointAngleCommand()
         wrist_state.q0 = 0
         wrist_state.q1 = 0
         self.wrist_state_pub.publish(wrist_state)
 
-        print("Wrist state set to: ", desired_pitch, desired_roll)
+        # print("Wrist state set to: ", desired_pitch, desired_roll)
     
     def cartesian_state_callback(self, msg):
         self.cartesian_state = msg
-        print(self.cartesian_state)
+        # print(self.cartesian_state)
 
         orientation = self.cartesian_state.orientation
 
@@ -120,7 +119,7 @@ class HorizontalSpoon:
         input_frame[:3, :3] = R.from_quat([orientation.x, orientation.y, orientation.z, orientation.w]).as_matrix()
         input_frame[:3, 3] = np.array([self.cartesian_state.position.x, self.cartesian_state.position.y, self.cartesian_state.position.z])
 
-        self.tf_utils.publishTransformationToTF('base_link', 'input_frame', input_frame)
+        # self.tf_utils.publishTransformationToTF('base_link', 'input_frame', input_frame)
 
         # orientation is a quaternion
         # I want to find angle between x axis of this orientation and the xy plane of the world frame
@@ -137,6 +136,10 @@ class HorizontalSpoon:
         z_axis = r[:, 2]
         z = np.array([0, 0, 1])
 
+        # if np.linalg.norm(np.cross(z, x_axis)) < 0.2:
+        #     # do nothing
+        #     return
+
         cross = np.cross(x_axis, z) / np.linalg.norm(np.cross(x_axis, z))
         negative_cross = np.cross(z, x_axis) / np.linalg.norm(np.cross(z, x_axis))
 
@@ -147,7 +150,7 @@ class HorizontalSpoon:
         cross_frame[:3, 2] = cross
         cross_frame[:3, 3] = np.array([self.cartesian_state.position.x, self.cartesian_state.position.y, self.cartesian_state.position.z])
 
-        self.tf_utils.publishTransformationToTF('base_link', 'cross_frame', cross_frame)
+        # self.tf_utils.publishTransformationToTF('base_link', 'cross_frame', cross_frame)
 
         # visualize negative cross
         negative_cross_frame = np.eye(4)
@@ -156,25 +159,33 @@ class HorizontalSpoon:
         negative_cross_frame[:3, 2] = negative_cross
         negative_cross_frame[:3, 3] = np.array([self.cartesian_state.position.x, self.cartesian_state.position.y, self.cartesian_state.position.z])
 
-        self.tf_utils.publishTransformationToTF('base_link', 'negative_cross_frame', negative_cross_frame)
+        # self.tf_utils.publishTransformationToTF('base_link', 'negative_cross_frame', negative_cross_frame)
         
-        # if np.dot(cross, z_axis) > np.dot(negative_cross, z_axis):
-        if True:
-            # cross is the nearer vector   
-            direction = np.cross(z_axis, cross) / np.linalg.norm(np.cross(z_axis, cross))
-            direction = np.dot(direction, x_axis)
-            print("Pitch Direction: ", direction)
-            angle = np.arccos(np.dot(z_axis, cross))
-            pitch_angle = direction * angle
-        else:
-            # negative_cross is the nearer vector
-            direction = np.cross(z_axis, negative_cross) / np.linalg.norm(np.cross(z_axis, negative_cross))
-            direction = np.dot(direction, x_axis)
-            print("Direction: ", direction)
-            angle = np.arccos(np.dot(z_axis, negative_cross))
-            pitch_angle = direction * angle
+        # np.set_printoptions(precision=2, suppress=True)
+        # print(f"Cross: {cross} | Negative Cross: {negative_cross}")
 
-        print("Pitch angle: ", np.degrees(pitch_angle))
+        if np.linalg.norm(np.cross(z, x_axis)) > 0.2:
+            if np.dot(cross, z_axis) > np.dot(negative_cross, z_axis):
+            # if True:
+                # print("Cross is the nearer vector")
+                # cross is the nearer vector   
+                direction = np.cross(z_axis, cross) / np.linalg.norm(np.cross(z_axis, cross))
+                direction = np.dot(direction, x_axis)
+                # print(" --- Pitch Direction: ", direction)
+                angle = np.arccos(np.dot(z_axis, cross))
+                pitch_angle = direction * angle
+            else:
+                # print("Negative Cross is the nearer vector")
+                # negative_cross is the nearer vector
+                direction = np.cross(z_axis, negative_cross) / np.linalg.norm(np.cross(z_axis, negative_cross))
+                direction = np.dot(direction, x_axis)
+                # print("Direction: ", direction)
+                angle = np.arccos(np.dot(z_axis, negative_cross))
+                pitch_angle = direction * angle
+        else:
+            pitch_angle = self.last_pitch_angle
+
+        # print("Pitch angle: ", np.degrees(pitch_angle))
 
         # Find the angle between y-axis of cross
 
@@ -187,21 +198,22 @@ class HorizontalSpoon:
         roll_cross_frame[:3, 2] = cross
         roll_cross_frame[:3, 3] = np.array([self.cartesian_state.position.x, self.cartesian_state.position.y, self.cartesian_state.position.z])
 
-        self.tf_utils.publishTransformationToTF('base_link', 'roll_cross_frame', roll_cross_frame)
+        # self.tf_utils.publishTransformationToTF('base_link', 'roll_cross_frame', roll_cross_frame)
 
         if np.dot(roll_cross, x_axis) > np.dot(negative_roll_cross, x_axis):
             # roll_cross is the nearer vector
-            print("Roll Cross is the nearer vector")
+            # print("Roll Cross is the nearer vector")
             direction = np.cross(x_axis, roll_cross) / np.linalg.norm(np.cross(x_axis, roll_cross))
             direction = np.dot(direction, cross)
-            print("Roll Direction: ", direction)
+            # print("Roll Direction: ", direction)
             angle = np.arccos(np.dot(x_axis, roll_cross))
             roll_angle = direction * angle
         else:
+            # print("Negative Roll Cross is the nearer vector")
             # negative_roll_cross is the nearer vector
             direction = np.cross(x_axis, negative_roll_cross) / np.linalg.norm(np.cross(x_axis, negative_roll_cross))
             direction = np.dot(direction, z_axis)
-            print("Roll Direction: ", direction)
+            # print("Roll Direction: ", direction)
             angle = np.arccos(np.dot(x_axis, negative_roll_cross))
             roll_angle = direction * angle
 
@@ -235,12 +247,19 @@ class HorizontalSpoon:
 
         # self.set_wrist_state(-pitch_angle, -roll_angle)
         # send this angle to the wrist driver
-        print("Pitch angle: ", pitch_angle)
-        print("Roll angle: ", roll_angle)
+        # print("Pitch angle: ", pitch_angle)
+        # print("Roll angle: ", roll_angle)
         wrist_state = SimpleJointAngleCommand()
-        wrist_state.q0 = pitch_angle + 0.3
-        wrist_state.q1 = roll_angle
-        self.wrist_state_pub.publish(wrist_state)
+        wrist_state.q0 = -roll_angle 
+        wrist_state.q1 = pitch_angle
+        
+        try:
+            self.wrist_state_pub.publish(wrist_state)
+        except rospy.ROSException as e:
+            print("Failed to publish wrist state once (but should be okay)...")
+
+        self.last_pitch_angle = pitch_angle
+        self.last_roll_angle = roll_angle
         # print("Published wrist state: ", wrist_state)
 
     def run(self):
@@ -248,6 +267,13 @@ class HorizontalSpoon:
         # ensure that the spoon is always horizontal (position control)
 
         raise NotImplementedError
+    
+    def cleanup(self):
+        """Clean up resources (like unsubscribing from topics, stopping publishers)."""
+        if self.cartesian_state_sub:
+            self.cartesian_state_sub.unregister()
+        # Unregister other publishers/subscribers if needed
+        print("HorizontalSpoon cleaned up!")
     
 
 if __name__ == "__main__":

@@ -6,6 +6,32 @@ from sensor_msgs.msg import JointState
 
 from wrist_driver_interfaces.msg import SimpleJointAngleCommand
 from wrist_driver_interfaces.srv import SetWristMode, SetWristModeRequest, SetWristModeResponse
+from horizontal_spoon import HorizontalSpoon
+
+import threading
+import time
+
+class HorizontalSpoonThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.hs = HorizontalSpoon()
+        self._stop_event = threading.Event()
+
+    def run(self):
+        # Custom loop instead of rospy.spin()
+        while not self._stop_event.is_set():
+            # Do your work here or keep the node alive
+            time.sleep(0.1)  # Prevent CPU overutilization
+
+    def stop(self):
+        self._stop_event.set()
+
+    def terminate(self):
+        self.stop()
+        self.join()
+        if self.hs:
+            self.hs.cleanup()  # Call cleanup on the HorizontalSpoon instance
+            self.hs = None  # Clear reference to HorizontalSpoon to allow garbage collection
 
 class WristController:
     def __init__(self, offset_pitch=0, offset_roll=0):
@@ -13,6 +39,26 @@ class WristController:
 
         self.offset_pitch = offset_pitch
         self.offset_roll = offset_roll
+
+        self.hs_thread = None
+
+    def start_horizontal_spoon_thread(self):
+        if self.hs_thread is not None:
+            print("Horizontal Spoon thread already running")
+            return
+        
+        self.hs_thread = HorizontalSpoonThread()
+        self.hs_thread.start()
+        print("Horizontal Spoon thread started")
+
+    def stop_horizontal_spoon_thread(self):
+        if self.hs_thread is None:
+            print("Horizontal Spoon thread not running")
+            return
+        
+        self.hs_thread.terminate()  # Clean up the thread and HorizontalSpoon
+        self.hs_thread = None  # Clear reference to the thread
+        print("Horizontal Spoon thread stopped")
 
     def set_velocity_mode(self):
         # set wrist control mode to velocity
@@ -143,7 +189,8 @@ class WristController:
         wrist_state.q1 = 0
         self.wrist_state_pub.publish(wrist_state)
 
-        desired_pitch = -0.4 * math.pi
+        # desired_pitch = -0.4 * math.pi
+        desired_pitch = -0.5 * math.pi
         wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
         pitch_achieved = np.abs(wrist_joint_states.position[0] - desired_pitch) < 0.05
         while not pitch_achieved:
@@ -190,7 +237,8 @@ class WristController:
         print("current_roll: ", current_roll)
         # find nearest multiple of math.pi *2 for current_pitch and current_roll
         target_roll = round( (current_roll) / (math.pi * 2)) * math.pi * 2
-        self.set_wrist_state(1.0,target_roll)
+        # self.set_wrist_state(1.0,target_roll)
+        self.set_wrist_state(1.5,target_roll)
 
     def set_to_dip_pos(self):
         wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
@@ -228,13 +276,29 @@ if __name__ == '__main__':
     wrist_controller = WristController(offset_pitch=0.0, offset_roll=0.0)
     wrist_controller.set_velocity_mode()
     wrist_controller.reset()
-    # wrist_controller.set_to_scoop_pos()
+    wrist_controller.set_to_scoop_pos()
+
+    input("Press Enter to start horizontal spoon thread")
+    wrist_controller.start_horizontal_spoon_thread()
+    
+    input("Press Enter to stop horizontal spoon thread")
+    wrist_controller.stop_horizontal_spoon_thread()
+
+    input("Press Enter to set to scoop pos")
+    wrist_controller.set_velocity_mode()
+    wrist_controller.set_to_scoop_pos()
+
+    input("Press Enter to start horizontal spoon thread")
+    wrist_controller.start_horizontal_spoon_thread()
+    
+    input("Press Enter to stop horizontal spoon thread")
+    wrist_controller.stop_horizontal_spoon_thread()
     # wrist_controller.reset()
     # wrist_controller.set_to_cut_pos()
     # wrist_controller.reset()
     # wrist_controller.twirl_wrist(vel=8)
 
-    wrist_controller.set_wrist_state(0.0, -0.78)
+    # wrist_controller.set_wrist_state(0.0, -0.78)
     
     # wrist_controller.set_to_cut_pos()
     # wrist_controller.twirl_wrist(vel=8)
