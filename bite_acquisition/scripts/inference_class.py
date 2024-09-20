@@ -683,8 +683,8 @@ class BiteAcquisitionInference:
         # self.FOOD_CLASSES = [f.replace('spaghetti', 'noodles') for f in self.FOOD_CLASSES]
         # self.FOOD_CLASSES.append('blue plate')
         self.FOOD_CLASSES = [f.replace('banana', 'yellow banana piece') for f in self.FOOD_CLASSES]
-        self.FOOD_CLASSES = [f.replace('baby carrot', 'orange baby carrot piece') for f in self.FOOD_CLASSES]
-        self.FOOD_CLASSES = [f.replace('cantaloupe', 'orange cantaloupe piece') for f in self.FOOD_CLASSES]
+        self.FOOD_CLASSES = [f.replace('baby carrot', 'baby carrot piece') for f in self.FOOD_CLASSES]
+        self.FOOD_CLASSES = [f.replace('cantaloupe', 'square orange cantaloupe piece') for f in self.FOOD_CLASSES]
         # self.FOOD_CLASSES.append('banana piece')
 
         print("Food Classes being detected: ", self.FOOD_CLASSES)
@@ -936,8 +936,8 @@ class BiteAcquisitionInference:
         print('Labels before replacement: ', labels)
         # bring back labels for banana slices back to banana
         labels = [l.replace('yellow banana piece', 'banana') for l in labels]
-        labels = [l.replace('orange baby carrot piece', 'baby carrot') for l in labels]
-        labels = [l.replace('orange cantaloupe piece', 'cantaloupe') for l in labels]
+        labels = [l.replace('baby carrot piece', 'baby carrot') for l in labels]
+        labels = [l.replace('square orange cantaloupe piece', 'cantaloupe') for l in labels]
         # labels = [l.replace('banana piece', 'banana') for l in labels]    
         print('Labels after replacement: ', labels)
 
@@ -964,7 +964,7 @@ class BiteAcquisitionInference:
                     categories.append('noodles')
                 elif 'mashed' in label or 'oatmeal' in label:
                     categories.append('semisolid')
-                elif 'banana' in label or 'strawberry' in label or 'watermelon' in label or 'celery' in label or 'baby carrot' in label or 'cantaloupe' in label:
+                elif 'banana' in label or 'strawberry' in label or 'watermelon' in label or 'celery' in label or 'baby carrot' in label or 'cantaloupe' in label or 'apple' in label:
                     categories.append('fruit')
                 elif 'broccoli' in label:
                     categories.append('vegetable')

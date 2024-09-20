@@ -190,7 +190,7 @@ class WristController:
         self.wrist_state_pub.publish(wrist_state)
 
         # desired_pitch = -0.4 * math.pi
-        desired_pitch = -0.5 * math.pi
+        desired_pitch = -0.48 * math.pi
         wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)
         pitch_achieved = np.abs(wrist_joint_states.position[0] - desired_pitch) < 0.05
         while not pitch_achieved:

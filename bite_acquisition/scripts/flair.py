@@ -48,11 +48,12 @@ HOME_ORIENTATION = Rotation.from_quat([1/math.sqrt(2), 1/math.sqrt(2), 0, 0]).as
 DEFAULT_FORCE_THRESHOLD = [30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
 
 class FLAIR:
-    def __init__(self, robot_controller, wrist_controller):
+    def __init__(self, robot_controller, wrist_controller, no_waits=False):
 
         print("Feeding Bot initialized")
 
-        self.skill_library = SkillLibrary(robot_controller, wrist_controller)
+        self.skill_library = SkillLibrary(robot_controller, wrist_controller, no_waits)
+        self.no_waits = no_waits
         self.inference_server = BiteAcquisitionInference(mode='ours')
 
         if not os.path.exists("log"):
@@ -126,9 +127,10 @@ class FLAIR:
             item_bounding_boxes.append([x, y, w, h]) # original image coordinates
             item_bounding_boxes_plate.append([x-plate_bounds[0], y-plate_bounds[1], w, h]) # plate image coordinates
 
-        cv2.imshow('vis', annotated_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        if not self.no_waits:
+            cv2.imshow('vis', annotated_image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
         # input("Visualzing the detected items. Press Enter to continue.")
 

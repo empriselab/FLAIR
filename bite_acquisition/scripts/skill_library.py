@@ -46,9 +46,10 @@ from visualizer import Visualizer
 PLATE_HEIGHT = 0.16 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
 
 class SkillLibrary:
-    def __init__(self, robot_controller, wrist_controller):
+    def __init__(self, robot_controller, wrist_controller, no_waits=False):
         self.robot_controller = robot_controller
         self.wrist_controller = wrist_controller
+        self.no_waits = no_waits
 
         self.pixel_selector = PixelSelector()
         self.tf_utils = flair_utils.TFUtils()
@@ -77,7 +78,8 @@ class SkillLibrary:
         self.visualizer.visualize_fork(tip_pose)
         self.tf_utils.publishTransformationToTF('base_link', 'tool_frame_target', tool_frame_target)
         
-        input("Press enter to actually move utensil.")
+        if not self.no_waits:
+            input("Press enter to actually move utensil.")
         if ROBOT == 'franka':
             self.robot_controller.move_to_pose(tool_frame_target)
         elif ROBOT == 'kinova':
@@ -346,7 +348,8 @@ class SkillLibrary:
         print("---- Height of skewer point: ", food_base[2,3])
 
         print("Food detection height: ", food_base[2,3])
-        input("Press enter to continue")
+        if not self.no_waits:
+            input("Press enter to continue")
         food_base[2,3] = max(food_base[2,3] - 0.01, PLATE_HEIGHT) 
         print("---- Height of skewer point (after max): ", food_base[2,3]) 
 
@@ -405,7 +408,7 @@ class SkillLibrary:
 
         self.tf_utils.publishTransformationToTF('base_link', 'tool_frame_target', tool_frame_target)
         
-        input("Press enter to start scooping pickup")
+        # input("Press enter to start scooping pickup")
 
         scoop_thread = threading.Thread(target=self.wrist_controller.scoop_wrist)
         scoop_thread.start()
