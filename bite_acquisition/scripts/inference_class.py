@@ -12,9 +12,9 @@ from torchvision.transforms import ToTensor, Compose
 from groundingdino.util.inference import Model
 from segment_anything import sam_model_registry, SamPredictor
 
-from .vision_utils import detect_densest, new_detect_densest, detect_sparsest, detect_centroid, detect_angular_bbox, detect_convex_hull, detect_filling_push_noodles, detect_filling_push_semisolid, efficient_sam_box_prompt_segment, outpaint_masks, detect_blue, proj_pix2mask, cleanup_mask, visualize_keypoints, visualize_skewer, visualize_push, detect_plate, mask_weight, nearest_neighbor, nearest_point_to_mask, detect_furthest_unobstructed_boundary_point, calculate_heatmap_density, calculate_heatmap_entropy, resize_to_square, fill_enclosing_polygon, detect_fillings_in_mask, expanded_detect_furthest_unobstructed_boundary_point
+from vision_utils import detect_densest, new_detect_densest, detect_sparsest, detect_centroid, detect_angular_bbox, detect_convex_hull, detect_filling_push_noodles, detect_filling_push_semisolid, efficient_sam_box_prompt_segment, outpaint_masks, detect_blue, proj_pix2mask, cleanup_mask, visualize_keypoints, visualize_skewer, visualize_push, detect_plate, mask_weight, nearest_neighbor, nearest_point_to_mask, detect_furthest_unobstructed_boundary_point, calculate_heatmap_density, calculate_heatmap_entropy, resize_to_square, fill_enclosing_polygon, detect_fillings_in_mask, expanded_detect_furthest_unobstructed_boundary_point
 
-from .preference_planner import PreferencePlanner
+from preference_planner import PreferencePlanner
 
 import os
 from openai import OpenAI
@@ -26,13 +26,15 @@ import requests
 import cmath
 import math
 
-from .src.food_pos_ori_net.model.minispanet import MiniSPANet
-from .src.spaghetti_segmentation.model import SegModel
+import sys
+sys.path.insert(0, "..")
+from src.food_pos_ori_net.model.minispanet import MiniSPANet
+from src.spaghetti_segmentation.model import SegModel
 import torchvision.transforms as transforms
 
-PATH_TO_GROUNDED_SAM = '/home/rkjenamani/Grounded-Segment-Anything'
-PATH_TO_DEPTH_ANYTHING = '/home/rkjenamani/Depth-Anything'
-PATH_TO_SPAGHETTI_CHECKPOINTS = '/home/rkjenamani/flair_ws/src/bite_acquisition/spaghetti_checkpoints'
+PATH_TO_GROUNDED_SAM = '/home/isacc/Grounded-Segment-Anything'
+PATH_TO_DEPTH_ANYTHING = '/home/isacc/Depth-Anything'
+PATH_TO_SPAGHETTI_CHECKPOINTS = '/home/isacc/deployment_ws/src/FLAIR/bite_acquisition/spaghetti_checkpoints'
 USE_EFFICIENT_SAM = False
 
 sys.path.append(PATH_TO_DEPTH_ANYTHING)
@@ -1246,141 +1248,3 @@ class BiteAcquisitionInference:
             return next_actions[acquire_idx], dip_actions[dip_idx]
         else: 
             return None, None
-
-# if __name__ == '__main__':
-#     inference_server = BiteAcquisitionInference()
-
-#     #items = inference_server.recognize_items(image)
-#     #inference_server.FOOD_CLASSES = items
-#     #clean_labels = inference_server.clean_labels(labels[:-1])
-#     #inference_server.get_noodle_action(image, masks, labels, categories)
-#     #inference_server.get_manual_action(annotated_image, image, masks, labels, categories)
-#     #efficiencies = inference_server.plan_efficient_bites(image, labels, categories)
-#     #print(efficiencies)
-
-#     #EVAL_DIR = 'filling_noodles'
-#     EVAL_DIR = 'mashed_potatoes'
-#     SOURCE_IMAGE_DIR = '%s/images'%EVAL_DIR
-#     OUTPUT_DIR = 'outputs'
-
-#     if not os.path.exists(OUTPUT_DIR):
-#         os.mkdir(OUTPUT_DIR)
-
-#     with open(os.path.join(EVAL_DIR, 'priya_labels.txt'), 'r') as f:
-#         gt_actions = [l.strip() for l in f.readlines()]
-
-#     total_count = 0
-#     correct_count = 0
-
-#     for i, fn in enumerate(os.listdir(SOURCE_IMAGE_DIR)):
-#         print(i)
-#         SOURCE_IMAGE_PATH = os.path.join(SOURCE_IMAGE_DIR, '%d.jpg'%(i+1))
-#         image = cv2.imread(SOURCE_IMAGE_PATH)
-#         image = image[0:550, 400:950] 
-#         image = resize_to_square(image, 480)
-
-#         # cv2.imshow('img', image)
-#         # cv2.waitKey(0)
-
-#         annotated_image, masks, portion_weights, labels = inference_server.detect_items(image, log_path = OUTPUT_DIR + '/' + str(i) + '_')
-#         #for j in range(len(masks)):
-#         #    if 'blue' == labels[j]:
-#         #        cv2.imwrite(os.path.join(OUTPUT_DIR, '%02d_%s.jpg'%(i,labels[j])), masks[j])
-
-#         categories = inference_server.categorize_items(labels)
-#         #cv2.imwrite(os.path.join(OUTPUT_DIR, '%02d_all.jpg'%(i)), annotated_image)
-
-#         #result = inference_server.get_noodle_action(image, masks, labels, categories)
-#         result = inference_server.get_scoop_action(image, masks, labels, categories)
-
-#         valid_actions_vis = result[-3]
-#         heatmap = result[-2]
-#         action = result[-1]
-
-#         gt_action = gt_actions[i]
-#         mapping = {'Acquire': 'Scoop', 'Push Filling': 'Push Filling', 'Group': 'Group'}
-#         action = mapping[action]
-#         if gt_action in action.lower():
-#             correct_count += 1
-#         total_count += 1
-#         print('Accuracy', correct_count/total_count)
-
-#         #cv2.imwrite(os.path.join(OUTPUT_DIR, '%02d_valid.jpg'%(i)), valid_actions_vis)
-#         cv2.imwrite(os.path.join(OUTPUT_DIR, '%02d_action.jpg'%(i)), np.hstack((image, heatmap)))
-
-if __name__ == "__main__":
-
-    inference_server = BiteAcquisitionInference()
-
-    ### Test for identifying food items
-    identification_test_dir = 'test_images/identification'
-    for filename in os.listdir(identification_test_dir):
-        image = cv2.imread(os.path.join(identification_test_dir, filename))
-        items = inference_server.recognize_items(image)
-        print(items)
-
-    ### Test for segmentation of food items
-    segmentation_test_dir = 'test_images/segmentation'
-    segmentation_output_dir = 'outputs/segmentation'
-    if not os.path.exists(segmentation_output_dir):
-        os.mkdir(segmentation_output_dir)
-        
-    for filename in os.listdir(segmentation_test_dir):
-        image = cv2.imread(os.path.join(segmentation_test_dir, filename))
-        annotated_image, masks, portion_weights, labels = inference_server.detect_items(image, log_path = segmentation_output_dir + '/' + filename[:-4] + '_')
-        for j in range(len(masks)):
-            cv2.imwrite(os.path.join(segmentation_test_dir, '%s_%s.jpg'%(filename[:-4],labels[j])), masks[j])
-
-# if __name__ == '__main__':
-#     inference_server = BiteAcquisitionInference()
-
-#     EVAL_DIR = 'filling_noodles'
-#     SOURCE_IMAGE_DIR = '%s/images'%EVAL_DIR
-#     OUTPUT_DIR = 'outputs'
-
-#     if not os.path.exists(OUTPUT_DIR):
-#         os.mkdir(OUTPUT_DIR)
-
-#     with open(os.path.join(EVAL_DIR, 'rajat_labels.txt'), 'r') as f:
-#         gt_actions = [l.strip() for l in f.readlines()]
-
-#     total_count = 0
-#     correct_count = 0
-
-#     for i, fn in enumerate(os.listdir(SOURCE_IMAGE_DIR)):
-#     #for i in [11]:
-#         # try:
-#         SOURCE_IMAGE_PATH = os.path.join(SOURCE_IMAGE_DIR, '%d.jpg'%(i+1))
-#         image = cv2.imread(SOURCE_IMAGE_PATH)
-#         image = resize_to_square(image, 480)
-
-#         print("Detecting items ..")
-#         annotated_image, masks, portion_weights, labels = inference_server.detect_items(image, log_path = OUTPUT_DIR + '/' + str(i) + '_')
-#         #for j in range(len(masks)):
-#         #    cv2.imwrite(os.path.join(OUTPUT_DIR, '%02d_%s.jpg'%(i,labels[j])), masks[j])
-
-#         categories = inference_server.categorize_items(labels)
-#         #cv2.imwrite(os.path.join(OUTPUT_DIR, '%02d_all.jpg'%(i)), annotated_image)
-
-#         print("Categories: ", categories)
-
-#         result = inference_server.get_noodle_action(image, masks, labels, categories)
-#         valid_actions_vis = result[-3]
-#         heatmap = result[-2]
-#         action = result[-1]
-#         gt_action = gt_actions[i]
-#         if gt_action in action.lower():
-#             correct_count += 1
-#         total_count += 1
-#         print('Accuracy', correct_count/total_count)
-
-#         #cv2.imwrite(os.path.join(OUTPUT_DIR, '%02d_valid.jpg'%(i)), valid_actions_vis)
-
-#         #if 'Probably' not in gt_action:
-#         #    if action in gt_action:
-#         #        correct_count += 1
-#         #    total_count += 1
-#         #    print('Accuracy', correct_count/total_count)
-#         cv2.imwrite(os.path.join(OUTPUT_DIR, '%02d_noodles.jpg'%(i)), np.hstack((image, heatmap)))
-#         # except:
-#         #     continue

@@ -88,7 +88,7 @@ class TFUtils:
         self.broadcaster = tf2_ros.TransformBroadcaster()
         self.control_rate = rospy.Rate(100)
     
-    def getTransformationFromTF(self, source_frame, target_frame):
+    def getTransformationFromTF(self, source_frame, target_frame, debug = False):
 
         while not rospy.is_shutdown():
             try:
@@ -105,9 +105,10 @@ class TFUtils:
         T[:3,3] = np.array([transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z]).reshape(1,3)
         T[3,3] = 1
 
-        print("Translation: ", T[:3,3])
-        print("Rotation in quaternion: ", transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w)
-        print("Rotation in euler: ", Rotation.from_quat([transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w]).as_euler('xyz', degrees=True))
+        if debug:
+            print("Translation: ", T[:3,3])
+            print("Rotation in quaternion: ", transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w)
+            print("Rotation in euler: ", Rotation.from_quat([transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w]).as_euler('xyz', degrees=True))
 
         return T
     

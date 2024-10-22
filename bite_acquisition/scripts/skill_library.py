@@ -1,52 +1,49 @@
-import time
 import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 import math
-import os
-import time
-import os
-import pickle
-
-# ros imports
-import rospy
-import tf2_ros
-from geometry_msgs.msg import Point
-from sensor_msgs.msg import JointState
-from std_msgs.msg import String, Float64, Bool
-
 import threading
 import utils
 import cmath
 import yaml
-import argparse
+
+# ros imports
+import rospy
+from geometry_msgs.msg import Point
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool
 
 from rs_ros import RealSenseROS
 from pixel_selector import PixelSelector
-from robot_controller.franka_controller import FrankaRobotController
-from robot_controller.kinova_controller import KinovaRobotController
 from wrist_controller import WristController
 from visualizer import Visualizer
 
-ROBOT = 'franka' # 'kinova' or 'franka'
-PLATE_HEIGHT = 0.2 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
-
 class SkillLibrary:
-    def __init__(self, config):
+    def __init__(self):
+
+        self.robot_type = rospy.get_param('/robot_type')
+        self.plate_height = rospy.get_param('/plate_height')
+        self.max_food_height = rospy.get_param('/max_food_height')
+
         self.pixel_selector = PixelSelector()
         self.tf_utils = utils.TFUtils()
         self.visualizer = Visualizer()
-        if ROBOT == 'franka':
+        if self.robot_type == 'franka':
+            from robot_controller.franka_controller import FrankaRobotController
+            config_path = rospy.get_param('/robot_config')
+            with open(config_path, "r") as f:
+                config = yaml.load(f, Loader=yaml.Loader)
             self.robot_controller = FrankaRobotController(config)
-        elif ROBOT == 'kinova':
+        elif self.robot_type == 'kinova_6dof' or self.robot_type == 'kinova_7dof':
+            from robot_controller.kinova_controller import KinovaRobotController
             self.robot_controller = KinovaRobotController()
         self.wrist_controller = WristController()
-
-        self.beep_publisher = rospy.Publisher('/beep', String, queue_size=10)
 
         print("Skill library initialized")
 
     def reset(self):
+        self.pixel_selector.cleanup()
+        self.visualizer.clear_visualizations()
         self.robot_controller.reset()
         self.wrist_controller.reset()
 
@@ -60,8 +57,7 @@ class SkillLibrary:
 
         self.visualizer.visualize_fork(tip_pose)
         self.tf_utils.publishTransformationToTF('base_link', 'tool_frame_target', tool_frame_target)
-        
-        input("Press enter to actually move utensil.")
+    
         self.robot_controller.move_to_pose(tool_frame_target)
 
     def scooping_skill(self, color_image, depth_image, camera_info, keypoints = None):
@@ -69,6 +65,7 @@ class SkillLibrary:
         if keypoints is not None:
             start, end = keypoints
         else:
+            print("Click on start and end points for scooping in the pixel selector window.")
             clicks = self.pixel_selector.run(color_image, num_clicks=2)
             start = clicks[0]
             end = clicks[1]
@@ -80,58 +77,46 @@ class SkillLibrary:
 
         push_angle = utils.angle_between_pixels(np.array(start), np.array(end), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
         # push_angle = push_angle - 180
-        print("Push angle: ", push_angle)
         
         validity, lowest_point = utils.pixel2World(camera_info, start[0], start[1], depth_image)
         if not validity:
-            print("Invalid lowest point")
+            print("ERROR: Scooping start point has invalid depth")
             return
         
         validity, center_point = utils.pixel2World(camera_info, end[0], end[1], depth_image)
         if not validity:
-            print("Invalid center point")
+            print("ERROR: Scooping end point has invalid depth")
             return
         
         fork_rotation_scoop = self.tf_utils.getTransformationFromTF('camera_color_optical_frame', 'fork_tip')[:3,:3]
-        print("Fork rotation: ", fork_rotation)
 
         wrist_rotation = np.linalg.inv(fork_rotation) @ fork_rotation_scoop
-
-        # print roll yaw and pitch of wrist rotation
-        print("Roll: ", Rotation.from_matrix(wrist_rotation).as_euler('xyz', degrees=True)[0])
-        print("Yaw: ", Rotation.from_matrix(wrist_rotation).as_euler('xyz', degrees=True)[1])
-        print("Pitch: ", Rotation.from_matrix(wrist_rotation).as_euler('xyz', degrees=True)[2])
-
-        # estimate roation of fork along x axis
 
         scooping_start_pose = np.zeros((4,4))
         scooping_start_pose[:3,:3] = Rotation.from_euler('xyz', [0,0,push_angle], degrees=True).as_matrix() @ wrist_rotation
         scooping_start_pose[:3,3] = lowest_point.reshape(1,3)
         scooping_start_pose[3,3] = 1
-
         scooping_start_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ scooping_start_pose
-
-        scooping_start_pose[2,3] = PLATE_HEIGHT
+        scooping_start_pose[2,3] = self.plate_height
 
         scooping_end_pose = np.zeros((4,4))
         scooping_end_pose[:3,:3] = Rotation.from_euler('xyz', [0,0,push_angle], degrees=True).as_matrix() @ wrist_rotation
         scooping_end_pose[:3,3] = center_point.reshape(1,3)
         scooping_end_pose[3,3] = 1
-
         scooping_end_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ scooping_end_pose
+        scooping_end_pose[2,3] = self.plate_height
 
-        scooping_end_pose[2,3] = PLATE_HEIGHT
+        print("Scooping points height: ", scooping_start_pose[2,3], scooping_end_pose[2,3])
 
-        # visualize 
         self.visualizer.visualize_food(scooping_start_pose, id = 0)
         self.visualizer.visualize_food(scooping_end_pose, id = 1)
+
+        input("Check visualized fork tip poses (red cubes) on rviz. If correct, press ENTER to execute action. Otherwise, press CTRL+C to exit.")
 
         # action 2: move to above start position
         waypoint_1_tip = np.copy(scooping_start_pose)
         waypoint_1_tip[2,3] += 0.07
         self.move_utensil_to_pose(waypoint_1_tip)
-
-        # input("Press enter to continue")
 
         # action 3: move down until you are at start position
         waypoint_2_tip = np.copy(scooping_start_pose)
@@ -161,17 +146,15 @@ class SkillLibrary:
         if keypoint is not None:
             (center_x, center_y) = keypoint
         else:
+            print("Click on the point to dip in the pixel selector window.")
             clicks = self.pixel_selector.run(color_image)
             (center_x, center_y) = clicks[0]
-
-        cv2.circle(color_image, (center_x, center_y), 5, (0, 0, 255), -1)
-        cv2.imshow('vis', color_image)
 
         # get 3D point from depth image
         validity, point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
 
         if not validity:
-            print("Invalid point")
+            print("ERROR: Point of dipping has invalid depth")
             return
 
         # action 1: Rotate scooping DoF to dip angle
@@ -186,9 +169,11 @@ class SkillLibrary:
 
         point_base = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ point_transform
 
-        point_base[2,3] = PLATE_HEIGHT + 0.03 #0.045
+        point_base[2,3] = self.plate_height + 0.03 #0.045
 
         self.visualizer.visualize_food(point_base)
+
+        input("Check visualized fork tip poses (red cubes) on rviz. If correct, press ENTER to execute action. Otherwise, press CTRL+C to exit.")
 
         # action 2: Move to above position
         waypoint_1_tip = np.copy(point_base)
@@ -222,8 +207,9 @@ class SkillLibrary:
             # cv2.line(color_image_vis, (center_x-x2,center_y+y2), (cut_point[0]+x2,cut_point[1]-y2), (255,0,0), 2)
 
             cutting_angle = math.degrees(cutting_angle)
-            cutting_angle = cutting_angle + 180 # Rajat ToDo - remove this hack bruh
+            cutting_angle = cutting_angle + 180
         else:
+            print("Click on the left and right points for cutting in the pixel selector window.")
             clicks = self.pixel_selector.run(color_image, num_clicks=2)
             (left_x, left_y) = clicks[0]
             (right_x, right_y) = clicks[1]
@@ -236,18 +222,18 @@ class SkillLibrary:
                 center_x, center_y = right_x, right_y
             cutting_angle = utils.angle_between_pixels(np.array(clicks[0]), np.array(clicks[1]), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
 
-        # visualize cutting point and line between left and right points
-        cv2.circle(color_image, (center_x, center_y), 5, (0, 0, 255), -1)
-        # cv2.line(color_image, (left_x, left_y), (right_x, right_y), (0, 0, 255), 2)
+        # # visualize cutting point and line between left and right points
+        # cv2.circle(color_image, (center_x, center_y), 5, (0, 0, 255), -1)
+        # # cv2.line(color_image, (left_x, left_y), (right_x, right_y), (0, 0, 255), 2)
 
-        cv2.imshow('vis', color_image)
-        cv2.waitKey(0)
+        # cv2.imshow('vis', color_image)
+        # cv2.waitKey(0)
 
         # get 3D point from depth image
         validity, point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
 
         if not validity:
-            print("Invalid point")
+            print("ERROR: Point of cutting has invalid depth")
             return
         
         fork_rotation = self.tf_utils.getTransformationFromTF('camera_color_optical_frame', 'fork_tip')[:3,:3]
@@ -259,7 +245,6 @@ class SkillLibrary:
         fork_rotation_cut = self.tf_utils.getTransformationFromTF('camera_color_optical_frame', 'fork_tip')[:3,:3]
         wrist_rotation = np.linalg.inv(fork_rotation) @ fork_rotation_cut
 
-        print('Cutting angle: ', cutting_angle)
         # update cutting angle to take into account incline of fork tines
         cutting_angle = cutting_angle + 25
 
@@ -270,19 +255,21 @@ class SkillLibrary:
 
         cutting_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ cutting_pose
 
-        cutting_pose[2,3] = max(cutting_pose[2,3], PLATE_HEIGHT)
+        cutting_pose[2,3] = max(cutting_pose[2,3], self.plate_height)
 
         self.visualizer.visualize_food(cutting_pose)
 
         waypoint_1_tip = np.copy(cutting_pose)
         waypoint_1_tip[2,3] += 0.03 
 
+        input("Check visualized fork tip poses (red cubes) on rviz. If correct, press ENTER to execute action. Otherwise, press CTRL+C to exit.")
+
         self.move_utensil_to_pose(waypoint_1_tip)
 
         # action 2: Move down until tip touches the plate
 
         waypoint_2_tip = np.copy(cutting_pose)
-        waypoint_2_tip[2,3] = PLATE_HEIGHT - 0.009
+        waypoint_2_tip[2,3] = self.plate_height - 0.009
         self.move_utensil_to_pose(waypoint_2_tip)
 
         tip_to_wrist = self.tf_utils.getTransformationFromTF('fork_tip', 'tool_frame')
@@ -292,7 +279,7 @@ class SkillLibrary:
 
         # action 3: Push orthogonal to the cutting angle, in direction of towards the robot (+y relative to the fork)
         waypoint_3_tip = np.copy(cutting_pose)
-        waypoint_3_tip[2,3] = PLATE_HEIGHT - 0.009
+        waypoint_3_tip[2,3] = self.plate_height - 0.009
         y_displacement = np.eye(4)
         y_displacement[1,3] = 0.02
         waypoint_3_tip = waypoint_3_tip @ y_displacement
@@ -305,51 +292,44 @@ class SkillLibrary:
         
         self.move_utensil_to_pose(waypoint_4_tip, tip_to_wrist)
 
-    def skewering_skill(self, color_image, depth_image, camera_info, keypoint=None, major_axis=None, action_index=0):
+    def skewering_skill(self, color_image, depth_image, camera_info, keypoint=None, major_axis=None):
         if keypoint is not None:
             (center_x, center_y) = keypoint
             major_axis = np.degrees(major_axis)
         else:
+            print("Click on the point to skewer in the pixel selector window.")
             clicks = self.pixel_selector.run(color_image)
             (center_x, center_y) = clicks[0]
-            major_axis = 0
+            major_axis = -90
         
-        print(f"Center x {center_x}, Center y {center_y}, Action index {action_index}")
-
         # get 3D point from depth image
         validity, point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
 
         if not validity:
-            print("Invalid point")
+            print("ERROR: Point of skewer has invalid depth")
             return
 
-        print("Getting transformation from base_link to camera_color_optical_frame")
         food_transform = np.eye(4)
         food_transform[:3,3] = point.reshape(1,3)
         food_base = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ food_transform
-        print("---- Height of skewer point: ", food_base[2,3])
+        if food_base[2,3] > self.plate_height + self.max_food_height:
+            print("ERROR: Food detection height is outside max food height (probably because of faulty depth detection). Please try again.")
+            return
 
-        print("Food detection height: ", food_base[2,3])
-        input("Press enter to continue")
-        food_base[2,3] = max(food_base[2,3] - 0.01, PLATE_HEIGHT) 
-        print("---- Height of skewer point (after max): ", food_base[2,3]) 
+        print("Skewering point height: ", food_base[2,3])
+        food_base[2,3] = max(food_base[2,3] - 0.01, self.plate_height) 
 
         food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,0], degrees=True).as_matrix()
 
         skewer_axis = -major_axis - 90
-        if action_index%2 == 0: # 0s are along major axis
-            print("-------- Rotating by 90 degrees")
-            skewer_axis = skewer_axis + 90
-        if skewer_axis > 90:
-            skewer_axis = skewer_axis - 180
-
         food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,skewer_axis], degrees=True).as_matrix()
 
-        self.tf_utils.publishTransformationToTF('base_link', 'food_frame', food_base)
         self.visualizer.visualize_food(food_base)
 
         base_to_tip = self.tf_utils.getTransformationFromTF('base_link', 'fork_tip')
         food_base[:3,:3] = food_base[:3,:3] @ base_to_tip[:3,:3]
+
+        input("Check visualized fork tip poses (red cubes) on rviz. If correct, press ENTER to execute action. Otherwise, press CTRL+C to exit.")
 
         # Action 1: Move to action start position
         waypoint_1_tip = np.copy(food_base)
@@ -360,120 +340,8 @@ class SkillLibrary:
         waypoint_2_tip = np.copy(food_base)
         self.move_utensil_to_pose(waypoint_2_tip)
 
-        self.scooping_pickup()
+        self.scooping_pickup(hack=False)
         # self.move_utensil_to_pose(waypoint_1_tip)
-
-        # move to home position
-        self.robot_controller.reset()
-
-        # reset wrist
-        self.wrist_controller.reset()
-
-    def joint_state_callback(self, joint_name, msg):
-        if joint_name in msg.name:
-            index = msg.name.index(joint_name)
-            joint_position = msg.position[index]
-            return joint_position
-        return None
-
-    def vertical_skewering_skill(self, color_image, depth_image, camera_info, keypoint=None, major_axis=None, action_index=0):
-        if keypoint is not None:
-            (center_x, center_y) = keypoint
-            major_axis = np.degrees(major_axis)
-        else:
-            clicks = self.pixel_selector.run(color_image)
-            (center_x, center_y) = clicks[0]
-            major_axis = 0
-        
-        print(f"Center x {center_x}, Center y {center_y}, Action index {action_index}")
-
-        # get 3D point from depth image
-        validity, point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
-
-        if not validity:
-            print("Invalid point")
-            return
-        
-        # Action 1: Adjust the wrist to the desired state
-        if action_index == 0 or action_index == 1:
-            self.wrist_controller.set_wrist_state(0.18 * math.pi,math.pi)
-
-        print("Getting transformation from base_link to camera_color_optical_frame")
-        food_transform = np.eye(4)
-        food_transform[:3,3] = point.reshape(1,3)
-        print('------ Food transform: ', food_transform)
-        food_base = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ food_transform
-        print('------ Food base: ', food_base)
-
-        print("---- Height of skewer point: ", food_base[2,3])
-
-        print("Food detection height: ", food_base[2,3])
-        input("Press enter to continue")
-        food_base[2,3] = max(food_base[2,3] - 0.01, PLATE_HEIGHT) 
-        print("---- Height of skewer point (after max): ", food_base[2,3]) 
-
-        food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,0], degrees=True).as_matrix()
-
-        skewer_axis = -major_axis - 90
-        if action_index%2 == 0: # 0s are along major axis
-            print("-------- Rotating by 90 degrees")
-            skewer_axis = skewer_axis + 90
-        if skewer_axis > 90:
-            skewer_axis = skewer_axis - 180
-
-        food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,skewer_axis], degrees=True).as_matrix()
-
-        print('------ Food base2: ', food_base)
-
-        self.tf_utils.publishTransformationToTF('base_link', 'food_frame', food_base)
-        self.visualizer.visualize_food(food_base)
-        food_base[:3, 3] += [0.026, 0.01, 0]
-        # inital pose of the fork
-        init_base = np.copy(food_base)
-
-
-        print("Getting transformation from base_link to fork tip")
-        base_to_forkbase = self.tf_utils.getTransformationFromTF('base_link', 'forkbase')
-        forkpitch_joint_position = self.joint_state_callback('forkpitch_joint', rospy.wait_for_message('/wrist_joint_states', JointState))
-        forkpitch_joint_matrix = np.eye(4)
-        forkpitch_joint_matrix[:3, :3] = Rotation.from_euler('xyz', [0,-forkpitch_joint_position,0], degrees=False).as_matrix()
-        forkpitch_joint_matrix[:3, 3] = [0.0375, 0.000, 0.000]
-        base_to_forkpitch_matrix = np.dot(base_to_forkbase, forkpitch_joint_matrix)
-        self.tf_utils.publishTransformationToTF('base_link', 'forkpitch', base_to_forkpitch_matrix)
-
-        forkroll_joint_position = self.joint_state_callback('forkroll_joint', rospy.wait_for_message('/wrist_joint_states', JointState))
-        forkroll_joint_matrix = np.eye(4)
-        forkroll_joint_matrix[:3, :3] = Rotation.from_euler('xyz', [forkroll_joint_position,0,0], degrees=False).as_matrix()
-        forkroll_joint_matrix[:3, 3] = [0.045083, 0.000, 0.000]  # x translation as defined in the URDF
-        base_to_forkroll_matrix = np.dot(base_to_forkpitch_matrix, forkroll_joint_matrix)
-        self.tf_utils.publishTransformationToTF('base_link', 'forkroll', base_to_forkroll_matrix)
-
-        # print("Forkpitch matrix: ", forkpitch_matrix)
-        # print("Forkroll matrix: ", forkroll_matrix)
-        
-
-        base_to_tip = self.tf_utils.getTransformationFromTF('base_link', 'fork_tip')
-        food_base[:3,:3] = food_base[:3,:3] @ base_to_tip[:3,:3]
-        init_base[:3,:3] = init_base[:3,:3] @ base_to_tip[:3,:3]
-
-
-
-        # Action 2: Move to action start position
-        waypoint_1_tip = np.copy(init_base)
-        waypoint_1_tip[2,3] += 0.05
-        self.move_utensil_to_pose(waypoint_1_tip)
-
-        # Action 3: Move inside food item
-        waypoint_2_tip = np.copy(food_base)
-        self.move_utensil_to_pose(waypoint_2_tip)
-
-        # Action 4: Move up
-        waypoint_3_tip = np.copy(food_base)
-        waypoint_3_tip[2,3] += 0.05
-        self.move_utensil_to_pose(waypoint_3_tip)
-
-        # Action 5: Angle wrist
-        self.wrist_controller.set_wrist_state(0.4 * math.pi, 0.0)
 
         # move to home position
         self.robot_controller.reset()
@@ -500,9 +368,6 @@ class SkillLibrary:
         tool_frame_target = fork_base_target @ forkbase_to_tool_frame
 
         self.tf_utils.publishTransformationToTF('base_link', 'tool_frame_target', tool_frame_target)
-        
-        # print("Press enter to continue")
-        # input()
 
         if hack:
             scoop_thread = threading.Thread(target=self.wrist_controller.scoop_wrist_hack)
@@ -521,55 +386,56 @@ class SkillLibrary:
         if keypoints is not None:
             start, end = keypoints
         else:
+            print("Click on the start and end points for pushing in the pixel selector window.")
             clicks = self.pixel_selector.run(color_image, num_clicks=2)
             start = clicks[0]
             end = clicks[1]
-        
-        validity, end_vec_3d = utils.pixel2World(camera_info, end[0], end[1], depth_image)
-        if not validity:
-            print("Invalid depth detected")
-            return
 
         push_angle = utils.angle_between_pixels(np.array(start), np.array(end), color_image.shape[1], color_image.shape[0], orientation_symmetry = False)
 
         validity, start_vec_3d = utils.pixel2World(camera_info, start[0], start[1], depth_image)
         if not validity:
-            print("Invalid depth detected")
+            print("ERROR: Pushing start point has invalid depth")
             return
         
-        print("Executing pushing action.")
+        validity, end_vec_3d = utils.pixel2World(camera_info, end[0], end[1], depth_image)
+        if not validity:
+            print("ERROR: Pushing end point has invalid depth")
+            return
+        
+        pushing_start_pose = np.zeros((4,4))
+        pushing_start_pose[:3,:3] = Rotation.from_euler('xyz', [0,0,push_angle], degrees=True).as_matrix()
+        pushing_start_pose[:3,3] = start_vec_3d.reshape(1,3)
+        pushing_start_pose[3,3] = 1
+        pushing_start_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ pushing_start_pose
+        pushing_start_pose[2,3] = self.plate_height
 
-        grouping_start_pose = np.zeros((4,4))
-        grouping_start_pose[:3,:3] = Rotation.from_euler('xyz', [0,0,push_angle], degrees=True).as_matrix()
-        grouping_start_pose[:3,3] = start_vec_3d.reshape(1,3)
-        grouping_start_pose[3,3] = 1
+        pushing_end_pose = np.zeros((4,4))
+        pushing_end_pose[:3,:3] = Rotation.from_euler('xyz', [0,0,push_angle], degrees=True).as_matrix()
+        pushing_end_pose[:3,3] = end_vec_3d.reshape(1,3)
+        pushing_end_pose[3,3] = 1
+        pushing_end_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ pushing_end_pose
+        pushing_end_pose[2,3] = self.plate_height
 
-        grouping_start_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ grouping_start_pose
+        print("Pushing points height: ", pushing_start_pose[2,3], pushing_end_pose[2,3])
 
-        #print('here', grouping_start_pose[2], 'z', grouping_start_pose[2,3])
-        print("Pushing Depth: ", grouping_start_pose[2,3])
-        grouping_start_pose[2,3] = max(PLATE_HEIGHT, grouping_start_pose[2,3])
+        # visualize 
+        self.visualizer.visualize_food(pushing_start_pose, id = 0)
+        self.visualizer.visualize_food(pushing_end_pose, id = 1)
 
-        grouping_end_pose = np.zeros((4,4))
-        grouping_end_pose[:3,:3] = Rotation.from_euler('xyz', [0,0,push_angle], degrees=True).as_matrix()
-        grouping_end_pose[:3,3] = end_vec_3d.reshape(1,3)
-        grouping_end_pose[3,3] = 1
-
-        grouping_end_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ grouping_end_pose
-
-        grouping_end_pose[2,3] = max(PLATE_HEIGHT, grouping_start_pose[2,3])
+        input("Check visualized fork tip poses (red cubes) on rviz. If correct, press ENTER to execute action. Otherwise, press CTRL+C to exit.")
 
         # action 1: Move to above start position
-        waypoint_1 = np.copy(grouping_start_pose)
+        waypoint_1 = np.copy(pushing_start_pose)
         waypoint_1[2,3] += 0.05
         self.move_utensil_to_pose(waypoint_1)
 
         # action 2: Move down until tip touches plate
-        waypoint_2 = np.copy(grouping_start_pose)
+        waypoint_2 = np.copy(pushing_start_pose)
         self.move_utensil_to_pose(waypoint_2)
 
         # action 3: Move to end position
-        waypoint_3 = np.copy(grouping_end_pose)
+        waypoint_3 = np.copy(pushing_end_pose)
         self.move_utensil_to_pose(waypoint_3)
 
         # action 4: Move a bite up
@@ -580,20 +446,19 @@ class SkillLibrary:
         # action 5: Move to above start position
         self.robot_controller.reset()
 
-        return 
-
     def twirling_skill(self, color_image, depth_image, camera_info, keypoint = None, twirl_angle = None):
         
         if keypoint is not None:
             (center_x, center_y) = keypoint
         else:
+            print("Click on the point to twirl in the pixel selector window.")
             clicks = self.pixel_selector.run(color_image)
             (center_x, center_y) = clicks[0]
             twirl_angle = 90
 
         validity, center_point = utils.pixel2World(camera_info, center_x, center_y, depth_image)
         if not validity:
-            print("Invalid center pixel")
+            print("ERROR: Twirl point has invalid depth")  
             return
         twirl_angle = 90 + twirl_angle
 
@@ -604,11 +469,14 @@ class SkillLibrary:
 
         base_to_camera = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame")
         twirl_base_frame = base_to_camera @ twirl_camera_frame
+        twirl_base_frame[2,3] = self.plate_height
 
-        twirl_base_frame[2,3] = PLATE_HEIGHT
-
-        self.visualizer.visualize_fork(twirl_base_frame)
+        self.visualizer.visualize_food(twirl_base_frame)
         self.tf_utils.publishTransformationToTF("base_link", "target_fork_tip", twirl_base_frame)
+
+        print("Twirl point height: ", twirl_base_frame[2,3])
+
+        input("Check visualized fork tip poses (red cubes) on rviz. If correct, press ENTER to execute action. Otherwise, press CTRL+C to exit.")
 
         # action 1: Move to above position
         waypoint_1_tip = np.copy(twirl_base_frame)
@@ -629,16 +497,12 @@ class SkillLibrary:
         # action 5: Move to above position
         self.robot_controller.reset()
 
-        return None
+    def transfer_to_mouth(self, OFFSET = 0.1):
 
-    def move_to_mouth(self, OFFSET = 0.1):
-
-        # # ask to open mouth
-        # beep_msg = String()
-        # beep_msg.data = "O pen your mouth."
-        # self.beep_publisher.publish(beep_msg)
-
-        input('Detect mouth center?')
+        self.robot_controller.move_to_transfer_pose()
+        inp = input('Detect mouth center? (y/n): ')
+        while inp != 'y':
+            inp = input('Detect mouth center? (y/n): ')
 
         # check if mouth is open
         while True:
@@ -651,7 +515,7 @@ class SkillLibrary:
         mouth_center_3d_msg = rospy.wait_for_message('/mouth_center', Point)
         mouth_center_3d = np.array([mouth_center_3d_msg.x, mouth_center_3d_msg.y, mouth_center_3d_msg.z])
 
-        input('Execute transfer?')
+        input("Press ENTER to move in front of mouth.")
 
         base_to_fork_tip = self.tf_utils.getTransformationFromTF('base_link', 'tool_frame')
 
@@ -675,32 +539,6 @@ class SkillLibrary:
         self.tf_utils.publishTransformationToTF('base_link', 'transfer_target', transfer_target)
 
         self.move_utensil_to_pose(transfer_target)
-    
-if __name__ == "__main__":
-    rospy.init_node('SkillLibrary')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="/home/limbrepos/feeding_ws/src/franka_feeding/configs/feeding.yaml")
-    args = parser.parse_args()
-
-    config_path = args.config
-    with open(config_path, "r") as f:
-        config = yaml.load(f, Loader=yaml.Loader)
-    
-    skill_library = SkillLibrary(config)
-    skill_library.reset()
-
-    camera = RealSenseROS()
-    camera_header, camera_color_data, camera_info_data, camera_depth_data = camera.get_camera_data()
-
-    skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
-
-    # skill_library.scooping_skill(camera_color_data, camera_depth_data, camera_info_data)
-
-    # skill_library.dipping_skill(camera_color_data, camera_depth_data, camera_info_data)
-
-    # skill_library.pushing_skill(camera_color_data, camera_depth_data, camera_info_data)
-
-    # skill_library.twirling_skill(camera_color_data, camera_depth_data, camera_info_data)
-
-    # skill_library.cutting_skill(camera_color_data, camera_depth_data, camera_info_data)
+        input("Press ENTER to move back to before transfer pose.")
+        self.robot_controller.move_to_transfer_pose()

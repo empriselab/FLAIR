@@ -1,52 +1,47 @@
 <launch>
-    <!-- Gen3 specific arguments required by Kortex API for instantiating a private communication session -->
-    <arg name="ip_address" default="192.168.1.10" doc="IP address for TCP/UDP comms"/>
-    <arg name="username" default="admin" doc="Username for kortex session"/>
-    <arg name="password" default="admin" doc="Password for kortex session"/>
-    <arg name="api_session_inactivity_timeout_ms" default="35000"/> <!--milliseconds-->
-    <arg name="api_connection_inactivity_timeout_ms" default="20000"/> <!--milliseconds-->
-    <arg name="dof" default="6"/> <!--degrees of freedom-->
+  <!-- Gen3 specific arguments required by Kortex API for instantiating a private communication session -->
+  <arg name="ip_address" default="192.168.1.10" doc="IP address for TCP/UDP comms"/>
+  <arg name="username" default="admin" doc="Username for kortex session"/>
+  <arg name="password" default="admin" doc="Password for kortex session"/>
+  <arg name="api_session_inactivity_timeout_ms" default="35000"/> <!--milliseconds-->
+  <arg name="api_connection_inactivity_timeout_ms" default="20000"/> <!--milliseconds-->
+  <arg name="dof" default="7"/> <!--degrees of freedom-->
+  <arg name="plate_height" default="-0.005"/>
+  <arg name="max_food_height" default="0.1"/>
 
-    <!-- Gen3 Hardware Node -->
-    <node name="controller" pkg="bite_acquisition" type="controller" output="screen">
-        <param name="ip_address" value="$(arg ip_address)"/>
-        <param name="username" value="$(arg username)"/>
-        <param name="password" value="$(arg password)"/>
-        <param name="api_session_inactivity_timeout_ms" value="$(arg api_session_inactivity_timeout_ms)"/>
-        <param name="api_connection_inactivity_timeout_ms" value="$(arg api_connection_inactivity_timeout_ms)"/>
-    </node>
+  <param name="robot_type" value="$(eval 'kinova_6dof' if int(arg('dof')) == 6 else 'kinova_7dof')"/>
+  <param name="plate_height" value="$(arg plate_height)"/>
+  <param name="max_food_height" value="$(arg max_food_height)"/>
 
-    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find kortex_description)/robots/gen3_robotiq_2f_85.xacro dof:=$(arg dof) sim:=false vision:=true feeding_utensil:=true" />
+  <!-- Gen3 Hardware Node -->
+  <node name="controller" pkg="bite_acquisition" type="controller" output="screen">
+      <param name="ip_address" value="$(arg ip_address)"/>
+      <param name="username" value="$(arg username)"/>
+      <param name="password" value="$(arg password)"/>
+      <param name="api_session_inactivity_timeout_ms" value="$(arg api_session_inactivity_timeout_ms)"/>
+      <param name="api_connection_inactivity_timeout_ms" value="$(arg api_connection_inactivity_timeout_ms)"/>
+  </node>
 
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-        <param name="use_gui" value="false"/>
-        <rosparam param="source_list">["robot_joint_states", "wrist_joint_states"]</rosparam>
-        <param name="rate" value="100"/>
-    </node>
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find kortex_description)/robots/gen3_robotiq_2f_85.xacro dof:=$(arg dof) sim:=false vision:=true feeding_utensil:=true" />
 
-    <!-- TF Setup -->
-    <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub">
-        <param name="ignore_timestamp" value="true" />
-    </node>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+      <param name="use_gui" value="false"/>
+      <rosparam param="source_list">["robot_joint_states", "wrist_joint_states"]</rosparam>
+      <param name="rate" value="100"/>
+  </node>
 
-    <node name="st_map2world" pkg="tf" type="static_transform_publisher" respawn="false" output="screen" args="0 0 0 0 0 0 1 map world 10"/>
+  <!-- TF Setup -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub">
+      <param name="ignore_timestamp" value="true" />
+  </node>
 
-    <!-- <include file="$(find realsense2_camera)/launch/rs_rgbd.launch"/> -->
+  <node name="st_map2world" pkg="tf" type="static_transform_publisher" respawn="false" output="screen" args="0 0 0 0 0 0 1 map world 10"/>
 
-    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
-      args="0.026 0.063 0.031 0.5  0.5  0.5 -0.5 end_effector_link camera_link" />   BEST VALUES WITH 0.5 ROTATIONS -->
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch"/>
 
-    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
-      args="0.013 0.07 0.024 0.5  0.5  0.5 -0.5 end_effector_link camera_link" />   -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
+    args="0.01 0.0615 0.03 0.5  0.5  0.5 -0.5 end_effector_link camera_link" />
 
-    <!-- green blue red -->
-    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
-        args="0.017 0.06 0.033 0.50080661  0.49902445  0.50068027 -0.49948635 end_effector_link camera_link" /> -->
-
-    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
-      args="0.01823 0.06065 0.0285 0.5  0.5  0.5 -0.5 end_effector_link camera_link" /> -->
-
-    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
-      args="0.01 0.0615 0.03 0.5  0.5  0.5 -0.5 end_effector_link camera_link" />
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find bite_acquisition)/scripts/configs/default.rviz" required="true" output="screen"/>
 
 </launch>

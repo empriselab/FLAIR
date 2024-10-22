@@ -26,3 +26,6 @@ class PixelSelector:
             if len(self.clicks) >= num_clicks:
                 break
         return self.clicks
+    
+    def cleanup(self):
+        cv2.destroyAllWindows()

@@ -63,3 +63,12 @@ class Visualizer:
         marker_array.markers.append(marker)
 
         self.food_visualization_pub.publish(marker_array)
+
+    def clear_visualizations(self):
+        marker_array = MarkerArray()
+        marker = Marker()
+        marker.action = marker.DELETEALL
+        marker_array.markers.append(marker)
+
+        self.utensil_visualization_pub.publish(marker_array)
+        self.food_visualization_pub.publish(marker_array)

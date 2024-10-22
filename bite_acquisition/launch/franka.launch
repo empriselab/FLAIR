@@ -1,6 +1,13 @@
 <launch>
+  <arg name="plate_height" default="0.2"/>
+  <arg name="max_food_height" default="0.1"/>
   <!-- Load the robot description parameter -->
   <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/panda_arm_hand.urdf'" />
+
+  <param name="robot_type" value="franka"/>
+  <param name="robot_config" value="/home/limbrepos/feeding_ws/src/franka_feeding/configs/feeding.yaml">
+  <param name="plate_height" value="$(arg plate_height)"/>
+  <param name="max_food_height" value="$(arg max_food_height)"/>
 
   <!-- Start the joint state publisher GUI -->
   <!-- <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" /> -->

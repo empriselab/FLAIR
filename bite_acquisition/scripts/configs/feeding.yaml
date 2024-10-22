@@ -1,4 +1,5 @@
-# controller_class: ZeroRPCClient
+# Config for feeding with the franka arm
+
 controller_class: PolyMetisController
 controller_kwargs:
   ip_address: 192.168.2.121

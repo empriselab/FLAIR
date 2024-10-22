@@ -69,8 +69,8 @@ class WristController:
 
             self.wrist_state_pub.publish(wrist_state)
 
-            print("q0: ", wrist_state.q0)
-            print("q1: ", wrist_state.q1)
+            # print("q0: ", wrist_state.q0)
+            # print("q1: ", wrist_state.q1)
 
         wrist_state = SimpleJointAngleCommand()
         wrist_state.q0 = 0
@@ -111,11 +111,11 @@ class WristController:
 
                 self.wrist_state_pub.publish(wrist_state)
 
-                print("current_pitch: ", current_pitch)
-                print("desired_pitch: ", desired_pitch)
-                print("q0: ", wrist_state.q0)
-                print("q1: ", wrist_state.q1)
-                print("error: ", np.abs(current_pitch - desired_pitch))
+                # print("current_pitch: ", current_pitch)
+                # print("desired_pitch: ", desired_pitch)
+                # print("q0: ", wrist_state.q0)
+                # print("q1: ", wrist_state.q1)
+                # print("error: ", np.abs(current_pitch - desired_pitch))
 
             wrist_state = SimpleJointAngleCommand()
             wrist_state.q0 = 0
@@ -153,9 +153,9 @@ class WristController:
 
             self.wrist_state_pub.publish(wrist_state)
 
-            print("q0: ", wrist_state.q0)
-            print("q1: ", wrist_state.q1)
-            print("error: ", np.abs(current_pitch - desired_pitch))
+            # print("q0: ", wrist_state.q0)
+            # print("q1: ", wrist_state.q1)
+            # print("error: ", np.abs(current_pitch - desired_pitch))
 
         wrist_state = SimpleJointAngleCommand()
         wrist_state.q0 = 0
@@ -211,16 +211,6 @@ class WristController:
         current_roll = -wrist_joint_states.position[1]
 
         self.set_wrist_state(current_pitch, current_roll + math.pi/8)
-
-if __name__ == '__main__':
-    rospy.init_node('wrist_controller', anonymous=True)
-    wrist_controller = WristController()
-    wrist_controller.reset()
-    # wrist_controller.set_to_scoop_pos()
-    # wrist_controller.set_to_cut_pos()
-    # wrist_controller.twirl_wrist(vel=8)
-    # wrist_controller.scoop_wrist()
-    wrist_controller.scoop_wrist_hack()
     
 
    

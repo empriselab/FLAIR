@@ -137,17 +137,4 @@ class FrankaRobotController(RobotController):
         self.joint_state_lock.acquire()
         self.joint_state_values = joint_positions
         self.joint_state_lock.release()
-
-if __name__ == '__main__':
-    rospy.init_node('robot_controller', anonymous=True)
-    robot_controller = FrankaRobotController()
-
-    input('Press enter to move to acquisition position...')
-    robot_controller.move_to_acq_pose()
-
-    input('Press enter to move to transfer position...')
-    robot_controller.move_to_transfer_pose()
-
-    input('Press enter to reset the robot...')
-    robot_controller.reset()
         

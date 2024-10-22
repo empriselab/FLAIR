@@ -30,7 +30,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://kortex_description/tools/feeding_utensil/new_base_link.stl" />
+            filename="package://kortex_description/tools/feeding_utensil/base_link.stl" />
         </geometry>
         <material
             name="">
@@ -44,7 +44,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://kortex_description/tools/feeding_utensil/new_base_link.stl" />
+            filename="package://kortex_description/tools/feeding_utensil/base_link.stl" />
         </geometry>
         </collision>
     </link>
@@ -71,7 +71,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://kortex_description/tools/feeding_utensil/pitch_link.STL" />
+            filename="package://kortex_description/tools/feeding_utensil/pitch_link.stl" />
         </geometry>
         <material
             name="">
@@ -85,7 +85,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://kortex_description/tools/feeding_utensil/pitch_link.STL" />
+            filename="package://kortex_description/tools/feeding_utensil/pitch_link.stl" />
         </geometry>
         </collision>
     </link>
@@ -100,7 +100,7 @@
         <child
         link="${prefix}forkpitch" />
         <axis
-        xyz="0 1 0" />
+        xyz="0 -1 0" />
         <limit
         lower="${-pi/2}"
         upper="${pi/2}"
@@ -129,7 +129,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://kortex_description/tools/feeding_utensil/roll_link_new2.stl" />
+            filename="package://kortex_description/tools/feeding_utensil/roll_link.stl" />
         </geometry>
         <material
             name="">
@@ -143,7 +143,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://kortex_description/tools/feeding_utensil/roll_link_new2.stl" />
+            filename="package://kortex_description/tools/feeding_utensil/roll_link.stl" />
         </geometry>
         </collision>
     </link>
@@ -181,7 +181,7 @@
       <origin rpy="0 0 0" xyz="0.095 0.00 0.00"/>
     </joint>
 
-    <link name="${prefix}forque_tip">
+    <link name="${prefix}fork_tip">
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <mass value="0" />
@@ -191,7 +191,7 @@
 
     <joint name="${prefix}joint_fork_tip" type="fixed">
       <parent link="${prefix}feeding_utensil_tip"/>
-      <child link="${prefix}forque_tip"/>
+      <child link="${prefix}fork_tip"/>
       <axis xyz="0 0 0"/>
       <limit effort="2000" lower="0" upper="0" velocity="1"/>
       <origin rpy="1.570796 0 1.570796" xyz="0.0 0 0.0"/>
