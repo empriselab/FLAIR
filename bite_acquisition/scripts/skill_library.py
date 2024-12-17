@@ -43,7 +43,7 @@ from wrist_controller import WristController
 from visualizer import Visualizer
 
 # PLATE_HEIGHT = 0.16 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
-PLATE_HEIGHT = 0.16 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
+PLATE_HEIGHT = 0.12 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
 
 class SkillLibrary:
     def __init__(self, robot_controller, wrist_controller, no_waits=False):
@@ -61,7 +61,7 @@ class SkillLibrary:
 
     def reset(self):
         if ROBOT == 'kinova-deployment':
-            above_plate_pos = [-2.86495014, -1.61460533, -2.6115943, -1.37673391, 1.11842806, -1.17904586, -2.6957422]
+            above_plate_pos = [-2.24, -1.12, -1.82, -2.11, -0.60, -0.27, -1.49]
             self.robot_controller.execute_command(JointCommand(above_plate_pos))
         else:
             self.robot_controller.reset()
@@ -136,7 +136,7 @@ class SkillLibrary:
 
         scooping_start_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ scooping_start_pose
 
-        scooping_start_pose[2,3] = PLATE_HEIGHT
+        scooping_start_pose[2,3] = PLATE_HEIGHT + 0.01
 
         scooping_end_pose = np.zeros((4,4))
         scooping_end_pose[:3,:3] = Rotation.from_euler('xyz', [0,0,push_angle], degrees=True).as_matrix() @ wrist_rotation
@@ -145,7 +145,7 @@ class SkillLibrary:
 
         scooping_end_pose = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ scooping_end_pose
 
-        scooping_end_pose[2,3] = PLATE_HEIGHT
+        scooping_end_pose[2,3] = PLATE_HEIGHT + 0.01
 
         # visualize 
         self.visualizer.visualize_food(scooping_start_pose, id = 0)
@@ -208,7 +208,7 @@ class SkillLibrary:
 
         point_base = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ point_transform
 
-        point_base[2,3] = PLATE_HEIGHT + 0.03 #0.045
+        point_base[2,3] = PLATE_HEIGHT + 0#0.03 #0.045
 
         self.visualizer.visualize_food(point_base)
 
@@ -260,7 +260,7 @@ class SkillLibrary:
         # cv2.line(color_image, (left_x, left_y), (right_x, right_y), (0, 0, 255), 2)
 
         cv2.imshow('vis', color_image)
-        cv2.waitKey(0)
+        # cv2.waitKey(0)
 
         # get 3D point from depth image
         validity, point = flair_utils.pixel2World(camera_info, center_x, center_y, depth_image)
@@ -330,13 +330,13 @@ class SkillLibrary:
         else:
             clicks = self.pixel_selector.run(color_image)
             (center_x, center_y) = clicks[0]
-            major_axis = 0
+            major_axis = -np.pi/2
         
         print(f"Center x {center_x}, Center y {center_y}, Action index {action_index}")
 
         # get 3D point from depth image
         validity, point = flair_utils.pixel2World(camera_info, center_x, center_y, depth_image)
-
+        # breakpoint()
         if not validity:
             print("Invalid point")
             return
@@ -354,6 +354,9 @@ class SkillLibrary:
         print("---- Height of skewer point (after max): ", food_base[2,3]) 
 
         food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,0], degrees=True).as_matrix()
+
+        # magic number for skewering offset
+        food_base[0,3] += 0.012
 
         self.tf_utils.publishTransformationToTF('base_link', 'food_frame', food_base)
         self.visualizer.visualize_food(food_base)
@@ -492,44 +495,57 @@ class SkillLibrary:
         else:
             clicks = self.pixel_selector.run(color_image)
             (center_x, center_y) = clicks[0]
-            twirl_angle = 90
+            twirl_angle = -np.pi/2
 
-        validity, center_point = flair_utils.pixel2World(camera_info, center_x, center_y, depth_image)
+        validity, point = flair_utils.pixel2World(camera_info, center_x, center_y, depth_image)
         if not validity:
             print("Invalid center pixel")
             return
-        twirl_angle = 90 + twirl_angle
 
-        twirl_camera_frame = np.zeros((4,4))
-        twirl_camera_frame[:3,:3] = Rotation.from_euler('xyz', [0,0,twirl_angle], degrees=True).as_matrix()
-        twirl_camera_frame[:3,3] = center_point.reshape(1,3)
-        twirl_camera_frame[3,3] = 1
+        print("Getting transformation from base_link to camera_color_optical_frame")
+        food_transform = np.eye(4)
+        food_transform[:3,3] = point.reshape(1,3)
+        food_base = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame") @ food_transform
+        print("---- Height of skewer point: ", food_base[2,3])
 
-        base_to_camera = self.tf_utils.getTransformationFromTF("base_link", "camera_color_optical_frame")
-        twirl_base_frame = base_to_camera @ twirl_camera_frame
+        print("Food detection height: ", food_base[2,3])
+        if not self.no_waits:
+            input("Press enter to continue")
+        food_base[2,3] = max(food_base[2,3] - 0.01, PLATE_HEIGHT) 
+        print("---- Height of skewer point (after max): ", food_base[2,3]) 
 
-        twirl_base_frame[2,3] = PLATE_HEIGHT
+        food_base[:3,:3] = Rotation.from_euler('xyz', [0,0,0], degrees=True).as_matrix()
 
-        self.visualizer.visualize_fork(twirl_base_frame)
-        self.tf_utils.publishTransformationToTF("base_link", "target_fork_tip", twirl_base_frame)
+        self.tf_utils.publishTransformationToTF('base_link', 'food_frame', food_base)
+        self.visualizer.visualize_food(food_base)
 
-        # action 1: Move to above position
-        waypoint_1_tip = np.copy(twirl_base_frame)
+        base_to_tip = self.tf_utils.getTransformationFromTF('base_link', 'fork_tip')
+        food_base[:3,:3] = food_base[:3,:3] @ base_to_tip[:3,:3]
+
+        if twirl_angle < np.pi/2:
+            twirl_angle = twirl_angle + np.pi/2
+
+        # caching this so that the robot doesn't rotate the wrist again
+        tip_to_wrist = self.tf_utils.getTransformationFromTF('fork_tip', 'tool_frame')
+        
+        # Action 0: Rotate twirl DoF to skewer angle
+        self.wrist_controller.set_wrist_state(0, -twirl_angle)
+
+        # Action 1: Move to action start position
+        waypoint_1_tip = np.copy(food_base)
         waypoint_1_tip[2,3] += 0.05
+        self.move_utensil_to_pose(waypoint_1_tip, tip_to_wrist)
 
-        self.move_utensil_to_pose(waypoint_1_tip)
-
-        ## action 2: Move down until tip touches plate
-        waypoint_2_tip = np.copy(twirl_base_frame)
-        self.move_utensil_to_pose(waypoint_2_tip)
+        # Action 2: Move inside food item
+        waypoint_2_tip = np.copy(food_base)
+        self.move_utensil_to_pose(waypoint_2_tip, tip_to_wrist)
 
         ## action 3: Twirl
         self.wrist_controller.twirl_wrist()
 
-        ## action 4: Scooping pick up
-        self.scooping_pickup(hack=False)
-
-        return None
+        # Rajat ToDo: Switch to scooping pick up with hack = False
+        self.scooping_pickup()
+        # self.move_utensil_to_pose(waypoint_1_tip)
 
     def move_to_mouth(self, OFFSET = 0.1):
 
@@ -640,99 +656,99 @@ if __name__ == "__main__":
     elif ROBOT == 'kinova':
         robot_controller = KinovaRobotController()
     elif ROBOT == 'kinova-deployment':
+        print("Waiting for robot controller to initialize...")
         robot_controller = ArmInterfaceClient()
-
-        # Rajat Just for testing
-        above_plate_pos = [-2.86495014, -1.61460533, -2.6115943, -1.37673391, 1.11842806, -1.17904586, -2.6957422]
-        robot_controller.execute_command(JointCommand(above_plate_pos))
     
+    print("Waiting for wrist controller to initialize...")
     wrist_controller = WristController()
     wrist_controller.set_velocity_mode()
+
+    print("Waiting for skill library to initialize...")
     skill_library = SkillLibrary(robot_controller, wrist_controller)
     skill_library.reset()
     
     camera = RealSenseROS()
     camera_header, camera_color_data, camera_info_data, camera_depth_data = camera.get_camera_data()
 
-    inference_server = BiteAcquisitionInference(mode='ours')
-    inference_server.FOOD_CLASSES = ["yellow banana slice", "orange baby carrot"]
-    annotated_image, detections, item_masks, item_portions, item_labels, plate_bounds = inference_server.detect_items(camera_color_data)
+    # inference_server = BiteAcquisitionInference(mode='ours')
+    # inference_server.FOOD_CLASSES = ["chicken nugget", "noodles"]
+    # annotated_image, detections, item_masks, item_portions, item_labels, plate_bounds = inference_server.detect_items(camera_color_data)
     
-    plate_image = camera_color_data.copy()[plate_bounds[1]:plate_bounds[1]+plate_bounds[3], plate_bounds[0]:plate_bounds[0]+plate_bounds[2]]
-    web_interface._send_web_interface_message({"state": "prepare_bite", "status": "completed"})
-    web_interface.update_web_interface_image(plate_image)
-    time.sleep(1) # necessary or later messages will be ignored
+    # plate_image = camera_color_data.copy()[plate_bounds[1]:plate_bounds[1]+plate_bounds[3], plate_bounds[0]:plate_bounds[0]+plate_bounds[2]]
+    # web_interface._send_web_interface_message({"state": "prepare_bite", "status": "completed"})
+    # web_interface.update_web_interface_image(plate_image)
+    # time.sleep(1) # necessary or later messages will be ignored
 
-    clean_item_labels, _ = inference_server.clean_labels(item_labels)
+    # clean_item_labels, _ = inference_server.clean_labels(item_labels)
 
-    # remove detections of blue plate
-    if 'blue plate' in clean_item_labels:
-        idx = clean_item_labels.index('blue plate')
-        clean_item_labels.pop(idx)
-        item_labels.pop(idx)
-        item_masks.pop(idx)
-        item_portions.pop(idx)
+    # # remove detections of blue plate
+    # if 'blue plate' in clean_item_labels:
+    #     idx = clean_item_labels.index('blue plate')
+    #     clean_item_labels.pop(idx)
+    #     item_labels.pop(idx)
+    #     item_masks.pop(idx)
+    #     item_portions.pop(idx)
 
-    items_detection = {
-        'annotated_image': annotated_image,
-        'clean_item_labels': clean_item_labels,
-        'item_labels': item_labels,
-        'item_masks': item_masks,
-        'item_portions': item_portions,
-        'detections': detections
-    }
+    # items_detection = {
+    #     'annotated_image': annotated_image,
+    #     'clean_item_labels': clean_item_labels,
+    #     'item_labels': item_labels,
+    #     'item_masks': item_masks,
+    #     'item_portions': item_portions,
+    #     'detections': detections
+    # }
 
-    food_types = sorted(set(items_detection['clean_item_labels']))
+    # food_types = sorted(set(items_detection['clean_item_labels']))
 
-    # Send detections back to interface.
-    n_food_types = len(food_types)
-    food_type_to_data = {food_type: [] for food_type in food_types}
-    for label, bb in zip(items_detection['clean_item_labels'],
-                            items_detection['detections'].xyxy,
-                                strict=True):
-        x0, y0, x1, y1 = bb
-        w = x1 - x0
-        h = y1 - y0
-        x_diff, y_diff, _, _ = plate_bounds
-        item_data = [int(x0-x_diff), int(y0-y_diff), int(w), int(h)]
-        food_type_to_data[label].append(item_data)
-    data = [{k: v} for k, v in food_type_to_data.items()]
-    web_interface._send_web_interface_message({"n_food_types": n_food_types, "data": data})
+    # # Send detections back to interface.
+    # n_food_types = len(food_types)
+    # food_type_to_data = {food_type: [] for food_type in food_types}
+    # for label, bb in zip(items_detection['clean_item_labels'],
+    #                         items_detection['detections'].xyxy,
+    #                             strict=True):
+    #     x0, y0, x1, y1 = bb
+    #     w = x1 - x0
+    #     h = y1 - y0
+    #     x_diff, y_diff, _, _ = plate_bounds
+    #     item_data = [int(x0-x_diff), int(y0-y_diff), int(w), int(h)]
+    #     food_type_to_data[label].append(item_data)
+    # data = [{k: v} for k, v in food_type_to_data.items()]
+    # web_interface._send_web_interface_message({"n_food_types": n_food_types, "data": data})
 
-    # TODO: generalize this...
-    ordering_options = [f"Eat all the {food_type}s first" for food_type in food_types]
-    ordering_options += ["No preference"]
-    web_interface._send_web_interface_message({"n_ordering": len(ordering_options), "data": ordering_options})
+    # # TODO: generalize this...
+    # ordering_options = [f"Eat all the {food_type}s first" for food_type in food_types]
+    # ordering_options += ["No preference"]
+    # web_interface._send_web_interface_message({"n_ordering": len(ordering_options), "data": ordering_options})
 
-    # Wait for web interface to report order selection.
-    print("WAITING TO GET PREFERENCE")
-    while web_interface.user_preference is None:
-        time.sleep(1e-1)
-    print("FINISHED GETTING PREFERENCES")
+    # # Wait for web interface to report order selection.
+    # print("WAITING TO GET PREFERENCE")
+    # while web_interface.user_preference is None:
+    #     time.sleep(1e-1)
+    # print("FINISHED GETTING PREFERENCES")
 
-    print("Obtained user preference: ", web_interface.user_preference)
+    # print("Obtained user preference: ", web_interface.user_preference)
 
-    print("Item masks: ", len(item_masks))
-    print("Item labels: ", item_labels)
+    # print("Item masks: ", len(item_masks))
+    # print("Item labels: ", item_labels)
 
-    cv2.imshow('vis', annotated_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('vis', annotated_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
-    skewer_mask = item_masks[0]
-    skewer_point, skewer_angle = inference_server.get_skewer_action(skewer_mask)
-    vis = visualize_skewer(camera_color_data, skewer_point, skewer_angle)
-    cv2.imshow('vis', vis)
-    cv2.waitKey(0)
+    # skewer_mask = item_masks[0]
+    # skewer_point, skewer_angle = inference_server.get_skewer_action(skewer_mask)
+    # vis = visualize_skewer(camera_color_data, skewer_point, skewer_angle)
+    # cv2.imshow('vis', vis)
+    # cv2.waitKey(0)
 
-    k = input("Press 'y' to execute skewering skill: ")
-    if k == 'y':
-        skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data, skewer_point, skewer_angle)
-        skill_library.reset()
+    # k = input("Press 'y' to execute skewering skill: ")
+    # if k == 'y':
+    #     skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data, skewer_point, skewer_angle)
+    #     skill_library.reset()
 
     # skill_library.scooping_pickup()
 
-    # skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
+    skill_library.skewering_skill(camera_color_data, camera_depth_data, camera_info_data)
 
     # skill_library.scooping_skill(camera_color_data, camera_depth_data, camera_info_data)
 
@@ -741,5 +757,7 @@ if __name__ == "__main__":
     # skill_library.pushing_skill(camera_color_data, camera_depth_data, camera_info_data)
 
     # skill_library.twirling_skill(camera_color_data, camera_depth_data, camera_info_data)
+    above_plate_pos = [-2.24, -1.12, -1.82, -2.11, -0.60, -0.27, -1.49]
+    robot_controller.execute_command(JointCommand(above_plate_pos))
 
     # skill_library.cutting_skill(camera_color_data, camera_depth_data, camera_info_data)

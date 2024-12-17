@@ -53,8 +53,10 @@ class FLAIR:
         print("Feeding Bot initialized")
 
         self.skill_library = SkillLibrary(robot_controller, wrist_controller, no_waits)
+        print("skill lib init")
         self.no_waits = no_waits
         self.inference_server = BiteAcquisitionInference(mode='ours')
+        print("inf server init")
 
         if not os.path.exists("log"):
             os.mkdir("log")
@@ -77,7 +79,7 @@ class FLAIR:
         #self.log_count = len(os.listdir('log')) + 1
 
         # User preference
-        self.user_preference = "No preference."
+        self.user_preference = None
 
         # Continue food
         self.continue_food_label = None
@@ -106,8 +108,14 @@ class FLAIR:
     def set_food_items(self, items):
         self.inference_server.FOOD_CLASSES = items
 
-    def set_preferences(self, user_preference):
+    def set_preference(self, user_preference):
         self.user_preference = user_preference
+
+    def clear_preference(self):
+        self.user_preference = None
+
+    def is_preference_set(self):
+        return self.user_preference is not None
 
     def detect_items(self, camera_color_data, camera_depth_data, camera_info_data, log_path):
 
@@ -172,9 +180,9 @@ class FLAIR:
 
         print("----- Clean Item Labels:", clean_item_labels)
 
-        cv2.imwrite(log_path + "_annotated.png", annotated_image)
-        cv2.imwrite(log_path + "_color.png", camera_color_data)
-        cv2.imwrite(log_path + "_depth.png", camera_depth_data)
+        # cv2.imwrite(log_path + "_annotated.png", annotated_image)
+        # cv2.imwrite(log_path + "_color.png", camera_color_data)
+        # cv2.imwrite(log_path + "_depth.png", camera_depth_data)
 
         categories = self.inference_server.categorize_items(item_labels) 
 

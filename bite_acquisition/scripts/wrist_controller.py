@@ -237,8 +237,8 @@ class WristController:
         print("current_roll: ", current_roll)
         # find nearest multiple of math.pi *2 for current_pitch and current_roll
         target_roll = round( (current_roll) / (math.pi * 2)) * math.pi * 2
-        # self.set_wrist_state(1.0,target_roll)
-        self.set_wrist_state(1.5,target_roll)
+        self.set_wrist_state(1.0,target_roll)
+        # self.set_wrist_state(1.5,target_roll)
 
     def set_to_dip_pos(self):
         wrist_joint_states = rospy.wait_for_message('/wrist_joint_states', JointState)

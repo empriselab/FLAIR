@@ -157,10 +157,11 @@ class BiteAcquisitionInference:
         # GroundingDINO config and checkpoint
         self.GROUNDING_DINO_CONFIG_PATH = PATH_TO_GROUNDED_SAM + "/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
         self.GROUNDING_DINO_CHECKPOINT_PATH = PATH_TO_GROUNDED_SAM + "/groundingdino_swint_ogc.pth"
-        
+
+        print("Grounding Dino")        
         # Building GroundingDINO inference model
         self.grounding_dino_model = Model(model_config_path=self.GROUNDING_DINO_CONFIG_PATH, model_checkpoint_path=self.GROUNDING_DINO_CHECKPOINT_PATH)
-        
+        print("DIno done")
         self.use_efficient_sam = USE_EFFICIENT_SAM
 
         if self.use_efficient_sam:
@@ -172,11 +173,14 @@ class BiteAcquisitionInference:
             SAM_ENCODER_VERSION = "vit_h"
             SAM_CHECKPOINT_PATH = PATH_TO_GROUNDED_SAM + "/sam_vit_h_4b8939.pth"
 
+            print("SAM")
             # Building SAM Model and SAM Predictor
             sam = sam_model_registry[SAM_ENCODER_VERSION](checkpoint=SAM_CHECKPOINT_PATH)
             sam.to(device=self.DEVICE)
             self.sam_predictor = SamPredictor(sam)
+            print("done")
 
+        print("DEpth anything")
         self.depth_anything = DepthAnything.from_pretrained('LiheYoung/depth_anything_vitl14').to(self.DEVICE).eval()
 
         # self.depth_anything = DPT_DINOv2(encoder='vitl', features=256, out_channels=[256, 512, 1024, 1024], localhub=True).cuda()
@@ -195,6 +199,7 @@ class BiteAcquisitionInference:
             NormalizeImage(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             PrepareForNet(),
         ])
+        print("done")
 
         self.FOOD_CLASSES = ["spaghetti", "meatball"]
         self.BOX_THRESHOLD = 0.3
@@ -203,11 +208,13 @@ class BiteAcquisitionInference:
 
         self.CATEGORIES = ['meat/seafood', 'vegetable', 'noodles', 'fruit', 'dip', 'plate']
 
+        print("API key start")
         # read API key from command line argument
         self.api_key =  os.environ['OPENAI_API_KEY']
 
         self.gpt4v_client = GPT4VFoodIdentification(self.api_key, '/home/isacc/bite_acquisition/scripts/prompts/identification')
         self.client = OpenAI(api_key=self.api_key)
+        print("API key end")
 
         torch.set_flush_denormal(True)
         checkpoint_dir = PATH_TO_SPAGHETTI_CHECKPOINTS
@@ -682,9 +689,10 @@ class BiteAcquisitionInference:
         # self.FOOD_CLASSES = [f.replace('fettuccine', 'noodles') for f in self.FOOD_CLASSES]
         # self.FOOD_CLASSES = [f.replace('spaghetti', 'noodles') for f in self.FOOD_CLASSES]
         # self.FOOD_CLASSES.append('blue plate')
-        self.FOOD_CLASSES = [f.replace('banana', 'yellow banana piece') for f in self.FOOD_CLASSES]
+        self.FOOD_CLASSES = [f.replace('banana', 'circle yellow banana piece') for f in self.FOOD_CLASSES]
         self.FOOD_CLASSES = [f.replace('baby carrot', 'baby carrot piece') for f in self.FOOD_CLASSES]
         self.FOOD_CLASSES = [f.replace('cantaloupe', 'square orange cantaloupe piece') for f in self.FOOD_CLASSES]
+        self.FOOD_CLASSES = [f.replace('chicken nugget', 'chicken nugget piece') for f in self.FOOD_CLASSES]
         # self.FOOD_CLASSES.append('banana piece')
 
         print("Food Classes being detected: ", self.FOOD_CLASSES)
@@ -935,9 +943,10 @@ class BiteAcquisitionInference:
 
         print('Labels before replacement: ', labels)
         # bring back labels for banana slices back to banana
-        labels = [l.replace('yellow banana piece', 'banana') for l in labels]
+        labels = [l.replace('circle yellow banana piece', 'banana') for l in labels]
         labels = [l.replace('baby carrot piece', 'baby carrot') for l in labels]
         labels = [l.replace('square orange cantaloupe piece', 'cantaloupe') for l in labels]
+        labels = [l.replace('chicken nugget piece', 'chicken nugget') for l in labels]
         # labels = [l.replace('banana piece', 'banana') for l in labels]    
         print('Labels after replacement: ', labels)
 
