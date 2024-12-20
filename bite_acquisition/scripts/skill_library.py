@@ -42,8 +42,8 @@ else:
 from wrist_controller import WristController
 from visualizer import Visualizer
 
-# PLATE_HEIGHT = 0.16 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
-PLATE_HEIGHT = 0.12 # 0.192 for scooping, 0.2 for skewering, 0.198 for pushing, twirling
+PLATE_HEIGHT = 0.16 # vention stand mount
+# PLATE_HEIGHT = 0.12 # wheelchair mount
 
 class SkillLibrary:
     def __init__(self, robot_controller, wrist_controller, no_waits=False):
@@ -61,7 +61,8 @@ class SkillLibrary:
 
     def reset(self):
         if ROBOT == 'kinova-deployment':
-            above_plate_pos = [-2.24, -1.12, -1.82, -2.11, -0.60, -0.27, -1.49]
+            # above_plate_pos = [-2.24, -1.12, -1.82, -2.11, -0.60, -0.27, -1.49] # wheelchair mount
+            above_plate_pos = [-2.86495014, -1.61460533, -2.6115943, -1.37673391, 1.11842806, -1.17904586, -2.6957422]
             self.robot_controller.execute_command(JointCommand(above_plate_pos))
         else:
             self.robot_controller.reset()
